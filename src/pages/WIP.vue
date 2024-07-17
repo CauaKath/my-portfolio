@@ -16,7 +16,13 @@ export default {
     flex
     justify-center
     items-center
-    h-[calc(100vh-100px)]
+    h-[calc(100vh-100px-60px)]
     text-2xl;
+}
+
+@media screen and (max-width: 780px) {
+  .wip {
+    @apply h-[calc(100vh-60px-40px)];
+  }
 }
 </style>

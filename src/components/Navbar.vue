@@ -73,7 +73,7 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss">
 .header {
   @apply h-[100px] bg-primary-default text-white sticky top-0 z-50;
 
