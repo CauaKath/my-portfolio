@@ -12,6 +12,12 @@ export default {
 
 <style lang="scss">
 h1 {
-  @apply text-primary-default;
+  @apply text-primary-default h-[calc(100vh-100px-60px)] flex justify-center items-center text-2xl;
+}
+
+@media screen and (max-width: 780px) {
+  h1 {
+    @apply h-[calc(100vh-60px-40px)] text-xl;
+  }
 }
 </style>
