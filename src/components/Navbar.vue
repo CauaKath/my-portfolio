@@ -34,11 +34,11 @@
           <RouterLink :to="navigation.path">{{ navigation.name }}</RouterLink>
         </li>
 
-        <li class="menu-modal-item">
+        <li class="menu-modal-item" @click="toggleMenu">
           <RouterLink to="/login">Login</RouterLink>
         </li>
 
-        <li class="menu-modal-item">
+        <li class="menu-modal-item" @click="toggleMenu">
           <RouterLink to="/register">Sign up</RouterLink>
         </li>
       </ul>
