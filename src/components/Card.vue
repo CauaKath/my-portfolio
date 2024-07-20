@@ -17,12 +17,21 @@
         </span>
       </div>
 
-      <img class="lang-icon" :src="getImageUrl(language)" alt="Language icon">
+      <img class="lang-icon" :src="getLanguageIcon(language)" alt="Language icon">
     </div>
   </div>
 </template>
 
 <script lang="ts">
+import javaIcon from '@/assets/java.svg';
+import javascriptIcon from '@/assets/javascript.svg';
+import pythonIcon from '@/assets/python.svg';
+import typescriptIcon from '@/assets/typescript.svg';
+import htmlIcon from '@/assets/html.svg';
+import goIcon from '@/assets/go.svg';
+import vueIcon from '@/assets/vue.svg';
+import codeIcon from '@/assets/code.svg';
+
 export default {
   name: 'Card',
   props: {
@@ -47,8 +56,8 @@ export default {
       required: true,
     },
   },
-  setup() {
-    const getImageUrl = (language: string) => {
+  methods: {
+    getLanguageIcon(language: string) {
       const languageOptions = [
         'java', 'javascript', 'python', 'typescript', 'html', 'go', 'vue'
       ];
@@ -57,11 +66,18 @@ export default {
         ? language.toLowerCase()
         : 'code';
 
-      return new URL(`../../lib/Carousel/assets/${selectedLanguage}.svg`, import.meta.url).href
+      return {
+        java: javaIcon,
+        javascript: javascriptIcon,
+        python: pythonIcon,
+        typescript: typescriptIcon,
+        html: htmlIcon,
+        go: goIcon,
+        vue: vueIcon,
+        code: codeIcon,
+      }[selectedLanguage];
     }
-
-    return { getImageUrl }
-  }
+  },
 }
 </script>
 
