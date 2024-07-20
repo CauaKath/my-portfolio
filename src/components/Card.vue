@@ -17,7 +17,7 @@
         </span>
       </div>
 
-      <img class="lang-icon" :src="require(`../assets/${languageImage}`)" alt="Language icon">
+      <img class="lang-icon" :src="getImageUrl(language)" alt="Language icon">
     </div>
   </div>
 </template>
@@ -47,16 +47,20 @@ export default {
       required: true,
     },
   },
-  computed: {
-    languageImage() {
+  setup() {
+    const getImageUrl = (language: string) => {
       const languageOptions = [
         'java', 'javascript', 'python', 'typescript', 'html', 'go', 'vue'
       ];
 
-      return languageOptions.includes(this.language.toLowerCase())
-        ? `${this.language.toLowerCase()}.svg`
-        : 'code.svg';
+      const selectedLanguage = languageOptions.includes(language.toLowerCase())
+        ? language.toLowerCase()
+        : 'code';
+
+      return new URL(`../../lib/Carousel/assets/${selectedLanguage}.svg`, import.meta.url).href
     }
+
+    return { getImageUrl }
   }
 }
 </script>
