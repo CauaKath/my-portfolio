@@ -12,5 +12,8 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
+  },
+  define: {
+    'VITE_GITHUB_API_TOKEN': process.env.VITE_GITHUB_API_TOKEN
   }
 })
