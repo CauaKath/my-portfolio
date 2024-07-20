@@ -17,7 +17,7 @@
         </span>
       </div>
 
-      <img class="lang-icon" :src="`/src/assets/${languageImage}`" alt="Language icon">
+      <img class="lang-icon" :src="`@/assets/${languageImage}`" alt="Language icon">
     </div>
   </div>
 </template>
