@@ -1,7 +1,7 @@
 <template>
-  <div class="footer">
+  <footer class="footer">
     <p>© All rights reserved to @cauakath</p>
-  </div>
+  </footer>
 </template>
 
 <script lang="ts">

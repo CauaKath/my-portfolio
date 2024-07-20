@@ -7,10 +7,13 @@ import Footer from './components/Footer.vue'
 <template>
   <Navbar />
 
-  <RouterView />
+  <RouterView class="router-content"/>
 
   <Footer />
 </template>
 
 <style scoped>
+.router-content {
+  @apply min-h-[calc(100vh-100px-60px)];
+}
 </style>
