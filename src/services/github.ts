@@ -13,6 +13,7 @@ async function fetchMostRecentRepos() {
       },
       params: {
         affiliation: 'owner',
+        visibility: 'public',
         sort: 'updated',
         per_page: 10,
         page: 1,

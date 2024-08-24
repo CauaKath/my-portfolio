@@ -79,7 +79,7 @@ export default {
         ])
 
         if (recentRepos && orgRepos) {
-          this.repos = [...recentRepos, ...orgRepos]
+          this.repos = [...orgRepos, ...recentRepos]
         }
       } catch (error) {
         console.error(error)
