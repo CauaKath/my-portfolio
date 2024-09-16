@@ -11,14 +11,6 @@
         <span>RECENT POSTS</span>
 
         <div class="search-box">
-          <div class="search-input">
-            <img src="@/assets/search-gray.svg" alt="Search icon">
-            <input
-              type="text"
-              placeholder="Search for posts"
-            />
-          </div>
-
           <div class="add-button">
             <img src="@/assets/add.svg" alt="Add icon">
             <span>Add</span>
@@ -41,30 +33,22 @@
     <div class="all">
       <div class="all-header">
         <span>ALL POSTS</span>
+
+        <div class="search-input">
+          <img src="@/assets/search-gray.svg" alt="Search icon">
+          <input
+            type="text"
+            placeholder="Search for posts"
+          />
+        </div>
       </div>
 
       <div class="posts">
-        <table>
-          <tr>
-            <td>
-              <BlogPost />
-            </td>
-            <td>
-              <BlogPost />
-            </td>
-            <td>
-              <BlogPost />
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <BlogPost />
-            </td>
-            <td>
-              <BlogPost />
-            </td>
-          </tr>
-        </table>
+        <BlogPost />
+        <BlogPost />
+        <BlogPost />
+        <BlogPost />
+        <BlogPost />
       </div>
     </div>
   </div>
@@ -147,33 +131,10 @@ export default {
       .search-box {
         @apply
           flex
-          justify-between
+          justify-end
           items-center
           gap-6
           w-[60%];
-
-        .search-input {
-          @apply
-            w-full
-            flex
-            justify-start
-            items-center
-            gap-2
-            px-3
-            py-2
-            text-sm
-            bg-white
-            text-gray_text
-            rounded-full;
-
-          >input {
-            @apply
-              w-full
-              bg-transparent
-              border-none
-              outline-none;
-          }
-        }
 
         .add-button {
           @apply
@@ -238,8 +199,32 @@ export default {
         items-center
         gap-4;
 
+      .search-input {
+        @apply
+          w-full
+          flex
+          justify-start
+          items-center
+          gap-2
+          px-3
+          py-2
+          text-sm
+          bg-white
+          text-gray_text
+          rounded-full;
+
+        >input {
+          @apply
+            w-full
+            bg-transparent
+            border-none
+            outline-none;
+        }
+      }
+
       >span {
         @apply
+          w-full
           text-2xl
           font-bold
           text-primary-default;
@@ -255,25 +240,9 @@ export default {
         gap-8
         items-start;
 
-      table {
+      .post {
         @apply
-          border-spacing-2
-          w-full;
-
-        tr + tr {
-          @apply
-            mt-8;
-        }
-
-        tr {
-          @apply
-            w-full;
-
-          td {
-            @apply
-              w-[calc(100%/3)];
-          }
-        }
+          w-[calc(100%/4-24px)];
       }
     }
   }
