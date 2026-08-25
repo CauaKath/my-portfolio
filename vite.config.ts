@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { fileURLToPath, URL } from 'node:url'
 
 import { defineConfig } from 'vite'
@@ -13,7 +14,8 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
-  define: {
-    'VITE_GITHUB_API_TOKEN': process.env.VITE_GITHUB_API_TOKEN
+  test: {
+    environment: 'jsdom',
+    globals: true,
   }
 })
