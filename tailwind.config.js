@@ -19,10 +19,13 @@ export default {
           from: '#0369A1',
           to: '#0EA5E9'
         }
+      },
+      // Inside `extend` deliberately: as a sibling of `extend` this replaced
+      // Tailwind's whole default font scale, so font-mono/sans/serif did not
+      // exist and any use of them failed the build.
+      fontFamily: {
+        'roboto': ['Roboto', 'sans-serif'],
       }
-    },
-    fontFamily: {
-      'roboto': ['Roboto', 'sans-serif'],
     }
   },
   plugins: [],
