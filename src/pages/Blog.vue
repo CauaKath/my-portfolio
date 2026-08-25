@@ -6,63 +6,98 @@
       </div>
     </div>
 
-    <div class="recent">
-      <div class="recent-header">
-        <span>RECENT POSTS</span>
+    <div v-if="loading" class="loading">Loading posts…</div>
 
-        <div class="search-box">
-          <div class="add-button">
-            <img src="@/assets/add.svg" alt="Add icon">
-            <span>Add</span>
+    <div v-else-if="error" class="error">{{ error }}</div>
+
+    <template v-else>
+      <div class="recent">
+        <div class="recent-header">
+          <span>RECENT POSTS</span>
+
+          <div class="search-box">
+            <RouterLink v-if="auth.isAdmin" class="add-button" to="/blog/new">
+              <img src="@/assets/add.svg" alt="">
+              <span>Add</span>
+            </RouterLink>
+          </div>
+        </div>
+
+        <div v-if="posts.length === 0" class="empty">
+          No posts yet.
+        </div>
+
+        <div v-else class="posts">
+          <BlogPost v-if="featured" :post="featured" type="most-recent" />
+
+          <div v-if="secondary.length" class="second-and-third">
+            <BlogPost v-for="post of secondary" :key="post.id" :post="post" type="other-recent" />
           </div>
         </div>
       </div>
 
-      <div class="posts">
-        <BlogPost type="most-recent" />
-        
-        <div class="second-and-third">
-          <BlogPost type="other-recent" />
-          <BlogPost type="other-recent" />
+      <hr class="divider">
+
+      <div class="all">
+        <div class="all-header">
+          <span>ALL POSTS</span>
+
+          <div class="search-input">
+            <img src="@/assets/search-gray.svg" alt="">
+            <input v-model="query" type="text" placeholder="Search for posts" />
+          </div>
+        </div>
+
+        <div class="posts">
+          <BlogPost v-for="post of filtered" :key="post.id" :post="post" />
         </div>
       </div>
-    </div>
-
-    <hr class="divider">
-
-    <div class="all">
-      <div class="all-header">
-        <span>ALL POSTS</span>
-
-        <div class="search-input">
-          <img src="@/assets/search-gray.svg" alt="Search icon">
-          <input
-            type="text"
-            placeholder="Search for posts"
-          />
-        </div>
-      </div>
-
-      <div class="posts">
-        <BlogPost />
-        <BlogPost />
-        <BlogPost />
-        <BlogPost />
-        <BlogPost />
-      </div>
-    </div>
+    </template>
   </div>
 </template>
 
-<script lang="ts">
-import BlogPost from '@/components/BlogPost.vue';
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { RouterLink } from 'vue-router'
 
-export default {
-  name: 'Blog',
-  components: {
-    BlogPost,
-  },
-}
+import BlogPost from '@/components/BlogPost.vue'
+import { listPosts } from '@/services/posts'
+import { useAuthStore } from '@/stores/auth'
+import type { IPost } from '@/interfaces/post'
+
+const auth = useAuthStore()
+
+const posts = ref<IPost[]>([])
+const loading = ref(true)
+const error = ref('')
+const query = ref('')
+
+// The service returns whatever RLS allowed through: published posts for
+// everyone, plus drafts when an admin is signed in. Splitting below is for
+// layout only -- it is never what keeps drafts private.
+const featured = computed(() => posts.value[0] ?? null)
+const secondary = computed(() => posts.value.slice(1, 3))
+const rest = computed(() => posts.value.slice(3))
+
+const filtered = computed(() => {
+  const q = query.value.trim().toLowerCase()
+
+  if (!q) return rest.value
+
+  return rest.value.filter((post) =>
+    `${post.title} ${post.description ?? ''}`.toLowerCase().includes(q),
+  )
+})
+
+onMounted(async () => {
+  try {
+    posts.value = await listPosts()
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Could not load posts.'
+  } finally {
+    loading.value = false
+  }
+})
 </script>
 
 <style lang="scss">
@@ -103,6 +138,19 @@ export default {
           text-primary-default;
       }
     }
+  }
+
+  .loading, .empty, .error {
+    @apply
+      w-[80%]
+      text-base
+      text-gray_text
+      text-center
+      py-8;
+  }
+
+  .error {
+    @apply text-red-600;
   }
 
   .recent {
