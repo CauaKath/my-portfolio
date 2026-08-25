@@ -19,6 +19,8 @@ npm run dev
 | `npm test` | Run the unit and component tests |
 | `npm run type-check` | `vue-tsc` only |
 | `npm run verify:rls` | Check that Row Level Security hides drafts from anonymous visitors |
+| `npm run db:push` | Apply pending Supabase migrations to the linked project |
+| `npm run db:status` | Compare local migrations against what the linked project has applied |
 
 ## Blog
 

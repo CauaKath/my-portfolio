@@ -24,12 +24,40 @@ development can complete a sign-in.
 
 ## 3. Apply the migrations
 
-In the Supabase SQL editor, run the three files in `supabase/migrations/` in
-numeric order:
+Via the Supabase CLI, which records what has been applied so later migrations
+only run once:
 
-1. `0001_blog_schema.sql`
-2. `0002_blog_policies.sql`
-3. `0003_blog_storage.sql`
+```bash
+npx supabase login
+npx supabase link --project-ref <your-project-ref>
+npx supabase db push
+```
+
+`login` opens a browser once and stores a token globally, outside this repo.
+No Docker is required — that is only needed for `supabase start`, which runs a
+local Postgres; pushing to a hosted project is just a connection.
+
+`db push` applies everything in `supabase/migrations/` in filename order and
+records each one in `supabase_migrations.schema_migrations`.
+
+### If you already ran some of these by hand
+
+`db push` does not know about SQL you pasted into the dashboard, so it will try
+to re-run those files and fail on `create type` / `create table`. Mark the ones
+already applied as done, without re-running them:
+
+```bash
+npx supabase migration list                          # compare local vs remote
+npx supabase migration repair --status applied 20260825120000
+```
+
+Repeat for each version you had already executed, then `db push` the rest.
+
+### Manual fallback
+
+If you would rather not use the CLI, paste each file into the SQL editor in
+filename order, one at a time, confirming each succeeds before the next. You
+then have no migration history, so you are tracking what is applied yourself.
 
 ## 4. Make yourself the admin
 
