@@ -16,11 +16,11 @@
       </div>
 
       <div class="auth">
-        <RouterLink class="navbar-link" to="/login">Login</RouterLink>
-
-        <button class="register-btn">
-          <RouterLink to="/register">Sign up</RouterLink>
-        </button>
+        <template v-if="auth.isAdmin">
+          <RouterLink class="navbar-link" to="/blog/new">New post</RouterLink>
+          <button class="register-btn" @click="auth.signOut()">Log out</button>
+        </template>
+        <RouterLink v-else class="navbar-link" to="/login">Login</RouterLink>
       </div>
 
       <button class="burger-menu" @click="toggleMenu">
@@ -34,12 +34,16 @@
           <RouterLink :to="navigation.path">{{ navigation.name }}</RouterLink>
         </li>
 
-        <li class="menu-modal-item" @click="toggleMenu">
+        <template v-if="auth.isAdmin">
+          <li class="menu-modal-item" @click="toggleMenu">
+            <RouterLink to="/blog/new">New post</RouterLink>
+          </li>
+          <li class="menu-modal-item" @click="toggleMenu">
+            <button @click="auth.signOut()">Log out</button>
+          </li>
+        </template>
+        <li v-else class="menu-modal-item" @click="toggleMenu">
           <RouterLink to="/login">Login</RouterLink>
-        </li>
-
-        <li class="menu-modal-item" @click="toggleMenu">
-          <RouterLink to="/register">Sign up</RouterLink>
         </li>
       </ul>
     </div>
@@ -48,11 +52,15 @@
 
 <script lang="ts">
 import { RouterLink } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 export default {
   name: 'Navbar',
   components: {
     RouterLink,
+  },
+  setup() {
+    return { auth: useAuthStore() }
   },
   data() {
     return {
