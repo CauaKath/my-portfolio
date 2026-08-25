@@ -1,44 +1,60 @@
 <template>
-  <div class="post" :class="type">
-    <div class="post-image" :class="type"></div>
+  <RouterLink class="post" :class="type" :to="`/blog/${post.slug}`">
+    <div class="post-image" :class="type" :style="coverStyle"></div>
 
     <div class="post-content" :class="type">
       <div class="post-main">
         <div class="post-texts">
-          <span class="post-date">Aug 13 • 5 min read</span>
-          <span class="post-title">Pilha X Fila</span>
-          <span class="post-description">Qual a diferença? Onde utilizar cada uma? Exemplos práticos</span>
+          <span class="post-date">
+            {{ displayDate }} • {{ readTime }} min read
+            <span v-if="post.status === 'DRAFT'" class="draft-badge">DRAFT</span>
+          </span>
+          <span class="post-title">{{ post.title }}</span>
+          <span class="post-description">{{ post.description ?? '' }}</span>
         </div>
-
-        <img src="@/assets/add.svg" alt="Source icon">
       </div>
 
       <div class="post-tags" :class="type">
-        <span>#tech</span>
-        <span>#data-structure</span>
+        <span v-for="tag of post.tags" :key="tag">#{{ tag }}</span>
       </div>
     </div>
-  </div>
+  </RouterLink>
 </template>
 
-<script lang="ts">
-export default {
-  name: 'BlogPost',
-  props: {
-    type: {
-      type: String,
-      default: 'default',
-      validator: (value: string) => ['default', 'most-recent', 'other-recent'].includes(value),
-    }
-  }
-}
+<script setup lang="ts">
+import { computed } from 'vue'
+import { RouterLink } from 'vue-router'
+
+import { readTimeMinutes } from '@/lib/readTime'
+import type { IPost } from '@/interfaces/post'
+import defaultBanner from '@/assets/banner.jpg'
+
+const props = withDefaults(
+  defineProps<{
+    post: IPost
+    type?: 'default' | 'most-recent' | 'other-recent'
+  }>(),
+  { type: 'default' },
+)
+
+const readTime = computed(() => readTimeMinutes(props.post.body))
+
+const coverStyle = computed(() => ({
+  backgroundImage: `url('${props.post.cover_url ?? defaultBanner}')`,
+}))
+
+// Drafts have no published_at, so fall back to when they were last touched.
+const displayDate = computed(() => {
+  const iso = props.post.published_at ?? props.post.updated_at
+
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+})
 </script>
 
 <style lang="scss">
 .post {
   @apply
     flex
-    bg-red-300
     rounded-md
     h-full
     w-full;
@@ -56,7 +72,6 @@ export default {
   .post-image {
     @apply
       w-full
-      bg-[url('../assets/banner.jpg')]
       bg-center
       bg-cover;
 
@@ -119,6 +134,17 @@ export default {
             inline-block
             text-transparent
             bg-clip-text;
+        }
+
+        .draft-badge {
+          @apply
+            ml-2
+            bg-primary-default
+            text-white
+            text-xs
+            px-2
+            py-0.5
+            rounded;
         }
 
         .post-title {
