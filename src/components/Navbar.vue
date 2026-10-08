@@ -18,7 +18,7 @@
       <div class="auth">
         <!-- Icon-only so the row keeps the same width whether or not you are signed in -->
         <LocaleSwitcher />
-        <AppButton v-if="auth.isAdmin" class="auth-icon" variant="text" :icon="icons.logout" :label="$t('nav.logout')" @click="auth.signOut()" />
+        <AppButton v-if="auth.isAdmin" class="auth-icon" variant="text" danger :icon="icons.logout" :label="$t('nav.logout')" @click="auth.signOut()" />
         <AppButton v-else class="auth-icon" variant="text" :icon="icons.login" :label="$t('nav.login')" to="/login" />
       </div>
 
@@ -39,7 +39,7 @@
 
         <template v-if="auth.isAdmin">
           <li class="menu-modal-item" @click="toggleMenu">
-            <AppButton variant="text" @click="auth.signOut()">{{ $t('nav.logout') }}</AppButton>
+            <AppButton variant="text" danger @click="auth.signOut()">{{ $t('nav.logout') }}</AppButton>
           </li>
         </template>
         <li v-else class="menu-modal-item" @click="toggleMenu">
