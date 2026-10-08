@@ -12,6 +12,9 @@ export default {
         },
         text: '#F4F4F5',
         gray_text: '#64748B',
+        // Default AppButton color: navy-blue, close to the navbar but saturated
+        // enough that a tint of it reads blue instead of grey.
+        action: '#1E3A8A',
         background: '#E2E8F0',
         border: '#334155',
         light_border: '#CBD5E1',
