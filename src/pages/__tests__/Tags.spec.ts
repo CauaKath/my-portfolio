@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { mount, RouterLinkStub, flushPromises } from '@vue/test-utils'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { mount, RouterLinkStub, flushPromises, VueWrapper } from '@vue/test-utils'
 
 const services = {
   listTagsWithCount: vi.fn(),
@@ -21,15 +21,27 @@ import { DEFAULT_TAG_COLOR } from '@/lib/tag'
 const go = { id: 't1', name: 'Go', slug: 'go', description: 'Posts about Go', color: '#0369A1', post_count: 2 }
 const vue = { id: 't2', name: 'Vue', slug: 'vue', description: null, color: '#42B883', post_count: 0 }
 
+let mounted: VueWrapper | null = null
+
 function mountTags() {
-  return mount(Tags, { global: { stubs: { RouterLink: RouterLinkStub } } })
+  mounted = mount(Tags, { global: { stubs: { RouterLink: RouterLinkStub } } })
+
+  return mounted
 }
+
+// The confirmation dialog is teleported to <body>.
+const q = (selector: string) => document.body.querySelector<HTMLElement>(selector)
 
 beforeEach(() => {
   vi.clearAllMocks()
   services.listTagsWithCount.mockResolvedValue([go, vue])
-  vi.stubGlobal('confirm', vi.fn().mockReturnValue(true))
-  window.confirm = vi.fn().mockReturnValue(true)
+})
+
+afterEach(() => {
+  mounted?.unmount()
+  mounted = null
+  document.body.innerHTML = ''
+  document.body.style.overflow = ''
 })
 
 describe('Tags page', () => {
@@ -105,25 +117,65 @@ describe('Tags page', () => {
     expect(wrapper.find('.tag-row form').exists()).toBe(false)
   })
 
-  it('deletes after confirming and says how many posts lose the tag', async () => {
+  it('asks for confirmation in a modal instead of deleting right away', async () => {
+    const wrapper = mountTags()
+    await flushPromises()
+
+    expect(q('.confirm-dialog')).toBeNull()
+
+    await wrapper.findAll('.delete-tag')[0].trigger('click')
+
+    expect(q('.confirm-dialog')).not.toBeNull()
+    expect(q('.confirm-body')!.textContent).toContain('Go')
+    expect(q('.confirm-body')!.textContent).toContain('removed from 2 posts')
+    expect(services.deleteTag).not.toHaveBeenCalled()
+  })
+
+  it('says no post uses a tag that has none', async () => {
+    const wrapper = mountTags()
+    await flushPromises()
+
+    await wrapper.findAll('.delete-tag')[1].trigger('click')
+
+    expect(q('.confirm-body')!.textContent).toContain('No post uses it.')
+  })
+
+  it('deletes, reloads and closes when the modal is confirmed', async () => {
     services.deleteTag.mockResolvedValue(undefined)
     const wrapper = mountTags()
     await flushPromises()
 
     await wrapper.findAll('.delete-tag')[0].trigger('click')
+    q('.confirm-ok')!.click()
     await flushPromises()
 
-    expect(window.confirm).toHaveBeenCalledWith(expect.stringContaining('removed from 2 posts'))
     expect(services.deleteTag).toHaveBeenCalledWith('t1')
+    expect(services.listTagsWithCount).toHaveBeenCalledTimes(2)
+    expect(q('.confirm-dialog')).toBeNull()
   })
 
-  it('does not delete when the confirmation is declined', async () => {
-    window.confirm = vi.fn().mockReturnValue(false)
+  it('keeps the modal open and shows the error when deleting fails', async () => {
+    services.deleteTag.mockRejectedValue(new Error('denied'))
     const wrapper = mountTags()
     await flushPromises()
 
     await wrapper.findAll('.delete-tag')[0].trigger('click')
+    q('.confirm-ok')!.click()
+    await flushPromises()
+
+    expect(q('.confirm-dialog')).not.toBeNull()
+    expect(q('.confirm-error')!.textContent).toBe('denied')
+  })
+
+  it('does not delete when the modal is cancelled', async () => {
+    const wrapper = mountTags()
+    await flushPromises()
+
+    await wrapper.findAll('.delete-tag')[0].trigger('click')
+    q('.confirm-cancel')!.click()
+    await flushPromises()
 
     expect(services.deleteTag).not.toHaveBeenCalled()
+    expect(q('.confirm-dialog')).toBeNull()
   })
 })

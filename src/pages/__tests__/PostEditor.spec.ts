@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { mount, RouterLinkStub, flushPromises } from '@vue/test-utils'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { mount, RouterLinkStub, flushPromises, VueWrapper } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 
 const services = {
@@ -42,12 +42,26 @@ const tagList = [
   { id: 't2', name: 'data-structure', slug: 'data-structure', description: null, color: '#FDE047' },
 ]
 
+let mounted: VueWrapper | null = null
+
 function mountEditor(props: Record<string, unknown> = {}) {
-  return mount(PostEditor, {
+  mounted = mount(PostEditor, {
     props,
     global: { stubs: { RouterLink: RouterLinkStub } },
   })
+
+  return mounted
 }
+
+// The delete confirmation is teleported to <body>.
+const q = (selector: string) => document.body.querySelector<HTMLElement>(selector)
+
+afterEach(() => {
+  mounted?.unmount()
+  mounted = null
+  document.body.innerHTML = ''
+  document.body.style.overflow = ''
+})
 
 beforeEach(() => {
   setActivePinia(createPinia())
@@ -296,5 +310,62 @@ describe('PostEditor in edit mode', () => {
     await flushPromises()
 
     expect(wrapper.find('.unpublish').exists()).toBe(false)
+  })
+})
+
+describe('PostEditor delete confirmation', () => {
+  const existing = {
+    id: '1', slug: 'a', title: 'A', description: null, body: '', tags: [],
+    cover_url: null, status: 'DRAFT' as const,
+    published_at: null, created_at: '2026-08-01T10:00:00Z', updated_at: '2026-08-01T10:00:00Z',
+  }
+
+  async function openDialog() {
+    services.getPostBySlug.mockResolvedValue(existing)
+    const wrapper = mountEditor({ slug: 'a' })
+    await flushPromises()
+    await wrapper.find('.delete').trigger('click')
+
+    return wrapper
+  }
+
+  it('opens a modal instead of deleting right away', async () => {
+    await openDialog()
+
+    expect(q('.confirm-dialog')).not.toBeNull()
+    expect(q('.confirm-title')!.textContent).toBe('Delete post')
+    expect(services.deletePost).not.toHaveBeenCalled()
+  })
+
+  it('deletes and goes back to the blog when confirmed', async () => {
+    services.deletePost.mockResolvedValue(undefined)
+    await openDialog()
+
+    q('.confirm-ok')!.click()
+    await flushPromises()
+
+    expect(services.deletePost).toHaveBeenCalledWith('1')
+    expect(push).toHaveBeenCalledWith('/blog')
+  })
+
+  it('does nothing when cancelled', async () => {
+    await openDialog()
+
+    q('.confirm-cancel')!.click()
+    await flushPromises()
+
+    expect(services.deletePost).not.toHaveBeenCalled()
+    expect(q('.confirm-dialog')).toBeNull()
+  })
+
+  it('keeps the modal open and shows the error when deleting fails', async () => {
+    services.deletePost.mockRejectedValue(new Error('denied'))
+    await openDialog()
+
+    q('.confirm-ok')!.click()
+    await flushPromises()
+
+    expect(q('.confirm-error')!.textContent).toBe('denied')
+    expect(push).not.toHaveBeenCalled()
   })
 })

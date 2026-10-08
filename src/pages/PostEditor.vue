@@ -11,7 +11,7 @@
             <AppButton class="save-draft" variant="outlined" :icon="saveIcon" label="Save draft" :disabled="saving" @click="save('DRAFT')" />
             <AppButton v-if="!isPublished" class="publish" variant="filled" :icon="sendIcon" label="Publish" :disabled="saving" @click="save('PUBLISHED')" />
             <AppButton v-else class="unpublish" variant="filled" :icon="eyeOffIcon" label="Unpublish" :disabled="saving" @click="save('DRAFT')" />
-            <AppButton v-if="isEditing" class="delete" variant="outlined" danger :icon="trashIcon" label="Delete post" :disabled="saving" @click="remove" />
+            <AppButton v-if="isEditing" class="delete" variant="outlined" danger :icon="trashIcon" label="Delete post" :disabled="saving" @click="askRemove" />
           </div>
         </div>
       </div>
@@ -60,6 +60,15 @@
         </div>
       </div>
     </template>
+
+    <ConfirmModal
+      v-model:open="confirmingDelete"
+      title="Delete post"
+      message="Delete this post permanently? This cannot be undone."
+      :busy="saving"
+      :error="deleteError"
+      @confirm="remove"
+    />
   </div>
 </template>
 
@@ -77,6 +86,7 @@ import {
 } from '@/services/posts'
 import TagPicker from '@/components/TagPicker.vue'
 import AppButton from '@/components/AppButton.vue'
+import ConfirmModal from '@/components/ConfirmModal.vue'
 import PostCover from '@/components/PostCover.vue'
 import { renderMarkdown } from '@/lib/markdown'
 import { uniqueSlug } from '@/lib/slug'
@@ -105,6 +115,8 @@ const mode = ref<'edit' | 'preview'>('edit')
 const loading = ref(true)
 const saving = ref(false)
 const formError = ref('')
+const confirmingDelete = ref(false)
+const deleteError = ref('')
 
 const isEditing = computed(() => Boolean(props.slug))
 const isPublished = computed(() => status.value === 'PUBLISHED')
@@ -192,17 +204,23 @@ async function save(nextStatus: PostStatus) {
   }
 }
 
+function askRemove() {
+  deleteError.value = ''
+  confirmingDelete.value = true
+}
+
+// Runs from the modal's Delete. A failure stays in the modal so it is seen.
 async function remove() {
   if (!id.value) return
-  if (!window.confirm('Delete this post permanently?')) return
 
   saving.value = true
+  deleteError.value = ''
 
   try {
     await deletePost(id.value)
     router.push('/blog')
   } catch (err) {
-    formError.value = err instanceof Error ? err.message : 'Delete failed.'
+    deleteError.value = err instanceof Error ? err.message : 'Delete failed.'
     saving.value = false
   }
 }

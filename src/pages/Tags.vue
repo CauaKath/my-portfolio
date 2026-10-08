@@ -42,6 +42,19 @@
         </li>
       </ul>
     </div>
+
+    <ConfirmModal
+      v-model:open="deleteOpen"
+      title="Delete tag"
+      :busy="deleteBusy"
+      :error="deleteError"
+      @confirm="confirmDelete"
+    >
+      <template v-if="deleting">
+        Delete the tag <strong>{{ deleting.name }}</strong>?
+        {{ usageText(deleting) }}
+      </template>
+    </ConfirmModal>
   </div>
 </template>
 
@@ -50,6 +63,7 @@ import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 
 import AppButton from '@/components/AppButton.vue'
+import ConfirmModal from '@/components/ConfirmModal.vue'
 import TagChip from '@/components/TagChip.vue'
 import TagForm from '@/components/TagForm.vue'
 import { listTagsWithCount, createTag, updateTag, deleteTag } from '@/services/tags'
@@ -65,6 +79,12 @@ const error = ref('')
 const formError = ref('')
 const creating = ref(false)
 const editingId = ref<string | null>(null)
+// `deleting` is kept after the modal closes so its text does not blank out
+// during the fade-out; `deleteOpen` is what actually shows it.
+const deleting = ref<ITagWithCount | null>(null)
+const deleteOpen = ref(false)
+const deleteBusy = ref(false)
+const deleteError = ref('')
 
 async function load() {
   try {
@@ -116,14 +136,38 @@ function save(id: string, input: ITagInput) {
   return run(() => updateTag(id, input).then(() => undefined), () => { editingId.value = null })
 }
 
+function usageText(tag: ITagWithCount) {
+  if (!tag.post_count) return 'No post uses it.'
+
+  return `It will be removed from ${tag.post_count} ${tag.post_count === 1 ? 'post' : 'posts'}.`
+}
+
+// Opens the confirmation; nothing is deleted until the modal's Delete is pressed.
 function remove(tag: ITagWithCount) {
-  const usage = tag.post_count
-    ? `It will be removed from ${tag.post_count} ${tag.post_count === 1 ? 'post' : 'posts'}.`
-    : 'No post uses it.'
+  deleteError.value = ''
+  deleting.value = tag
+  deleteOpen.value = true
+}
 
-  if (!window.confirm(`Delete the tag "${tag.name}"? ${usage}`)) return
+// A failure keeps the modal open and shows the error in it, instead of
+// closing it and leaving the message somewhere the user may not look.
+async function confirmDelete() {
+  const tag = deleting.value
 
-  return run(() => deleteTag(tag.id), () => undefined)
+  if (!tag) return
+
+  deleteBusy.value = true
+  deleteError.value = ''
+
+  try {
+    await deleteTag(tag.id)
+    await load()
+    deleteOpen.value = false
+  } catch (err) {
+    deleteError.value = err instanceof Error ? err.message : 'Could not delete the tag.'
+  } finally {
+    deleteBusy.value = false
+  }
 }
 </script>
 
