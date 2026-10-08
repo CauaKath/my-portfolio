@@ -21,11 +21,11 @@
 
           <div class="confirm-actions">
             <AppButton ref="cancelButton" class="confirm-cancel" variant="outlined" :disabled="busy" @click="dismiss">
-              {{ cancelLabel }}
+              {{ cancelLabel || t('common.cancel') }}
             </AppButton>
 
             <AppButton class="confirm-ok" variant="filled" :danger="danger" :disabled="busy" @click="emit('confirm')">
-              {{ confirmLabel }}
+              {{ confirmLabel || t('common.delete') }}
             </AppButton>
           </div>
         </div>
@@ -41,6 +41,7 @@ let nextId = 0
 
 <script setup lang="ts">
 import { ref, watch, nextTick, onBeforeUnmount } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import AppButton from '@/components/AppButton.vue'
 
@@ -62,10 +63,12 @@ const props = withDefaults(
     busy?: boolean
     error?: string
   }>(),
-  { message: '', confirmLabel: 'Delete', cancelLabel: 'Cancel', danger: true, busy: false, error: '' },
+  { message: '', confirmLabel: '', cancelLabel: '', danger: true, busy: false, error: '' },
 )
 
 const emit = defineEmits<{ confirm: []; cancel: [] }>()
+
+const { t } = useI18n()
 
 const uid = nextId++
 const titleId = `confirm-title-${uid}`

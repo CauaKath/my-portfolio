@@ -3,20 +3,20 @@
     <div class="selected">
       <span v-for="tag of selectedTags" :key="tag.id" class="selected-tag">
         <TagChip :tag="tag" />
-        <button class="remove-tag" type="button" :aria-label="`Remove ${tag.name}`" @click="remove(tag.id)">×</button>
+        <button class="remove-tag" type="button" :aria-label="t('tagPicker.remove', { name: tag.name })" @click="remove(tag.id)">×</button>
       </span>
 
       <div class="add-wrap">
-        <AppButton class="add-tag" variant="float" :icon="plusIcon" label="Add tag" aria-haspopup="listbox" :aria-expanded="open" @click="open = !open" />
+        <AppButton class="add-tag" variant="float" :icon="plusIcon" :label="t('tagPicker.add')" aria-haspopup="listbox" :aria-expanded="open" @click="open = !open" />
 
         <div v-if="open" class="menu" role="listbox">
           <button v-for="tag of available" :key="tag.id" class="menu-tag" type="button" role="option" @click="add(tag.id)">
             <TagChip :tag="tag" />
           </button>
 
-          <p v-if="!available.length" class="menu-empty">{{ tags.length ? 'All tags selected' : 'No tags yet' }}</p>
+          <p v-if="!available.length" class="menu-empty">{{ tags.length ? t('tagPicker.allSelected') : t('tagPicker.none') }}</p>
 
-          <AppButton class="new-tag" variant="text" :icon="plusIcon" @click="startCreating">New tag</AppButton>
+          <AppButton class="new-tag" variant="text" :icon="plusIcon" @click="startCreating">{{ t('tags.new') }}</AppButton>
         </div>
       </div>
     </div>
@@ -24,13 +24,14 @@
     <p v-if="loadError" class="picker-error">{{ loadError }}</p>
 
     <div v-if="creating" class="create-box">
-      <TagForm submit-label="Create tag" :busy="busy" :server-error="createError" @submit="create" @cancel="creating = false" />
+      <TagForm :submit-label="t('tags.create')" :busy="busy" :server-error="createError" @submit="create" @cancel="creating = false" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import AppButton from '@/components/AppButton.vue'
 import TagChip from '@/components/TagChip.vue'
@@ -42,6 +43,8 @@ import type { ITag, ITagInput } from '@/interfaces/tag'
 // The ids of the selected tags. Ids rather than objects: that is what a post
 // stores, and it keeps this component the only owner of the tag list.
 const model = defineModel<string[]>({ default: () => [] })
+
+const { t } = useI18n()
 
 const tags = ref<ITag[]>([])
 const open = ref(false)
@@ -59,7 +62,7 @@ onMounted(async () => {
   try {
     tags.value = await listTags()
   } catch (err) {
-    loadError.value = err instanceof Error ? err.message : 'Could not load tags.'
+    loadError.value = err instanceof Error ? err.message : t('tags.loadFailed')
   }
 })
 
@@ -89,7 +92,7 @@ async function create(input: ITagInput) {
     model.value = [...model.value, tag.id]
     creating.value = false
   } catch (err) {
-    createError.value = err instanceof Error ? err.message : 'Could not create the tag.'
+    createError.value = err instanceof Error ? err.message : t('tagPicker.createFailed')
   } finally {
     busy.value = false
   }

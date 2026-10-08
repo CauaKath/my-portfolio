@@ -1,5 +1,5 @@
 <template>
-  <nav v-if="items.length" class="toc" aria-label="Table of contents">
+  <nav v-if="items.length" class="toc" :aria-label="$t('post.toc')">
     <ul>
       <li v-for="item of items" :key="item.id" :class="{ nested: item.level === 3, active: item.id === activeId }">
         <a :href="`#${item.id}`" @click.prevent="goTo(item.id)">{{ item.text }}</a>

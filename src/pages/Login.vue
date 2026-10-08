@@ -1,12 +1,12 @@
 <template>
   <div class="login">
     <div class="login-card">
-      <h1>Sign in</h1>
-      <p>This blog has a single author. Signing in gives you nothing unless you are it.</p>
+      <h1>{{ t('login.title') }}</h1>
+      <p>{{ t('login.text') }}</p>
 
       <AppButton class="github-btn" variant="filled" :disabled="loading" @click="signIn">
         <img src="@/assets/github-icon.png" alt="">
-        <span>{{ loading ? 'Redirecting…' : 'Continue with GitHub' }}</span>
+        <span>{{ loading ? t('login.redirecting') : t('login.github') }}</span>
       </AppButton>
 
       <p v-if="error" class="error">{{ error }}</p>
@@ -16,9 +16,11 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import AppButton from '@/components/AppButton.vue'
 import { useAuthStore } from '@/stores/auth'
 
+const { t } = useI18n()
 const auth = useAuthStore()
 const loading = ref(false)
 const error = ref('')
@@ -30,7 +32,7 @@ async function signIn() {
   try {
     await auth.signInWithGitHub()
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Sign in failed.'
+    error.value = err instanceof Error ? err.message : t('login.failed')
     loading.value = false
   }
 }

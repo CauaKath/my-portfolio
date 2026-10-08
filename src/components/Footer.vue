@@ -1,6 +1,6 @@
 <template>
   <footer class="footer">
-    <p>© All rights reserved to @cauakath</p>
+    <p>{{ $t('footer.rights') }}</p>
   </footer>
 </template>
 

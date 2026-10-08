@@ -2,8 +2,8 @@
   <div>
     <div class="home-header">
       <div>
-        <h2>Welcome to my Portfolio</h2>
-        <h5>Here you'll find my projects, my resumé and some other things I wanted to code</h5>
+        <h2>{{ $t('home.title') }}</h2>
+        <h5>{{ $t('home.subtitle') }}</h5>
       </div>
     </div>
 
@@ -11,7 +11,7 @@
       <div v-if="loading" class="card-list" aria-busy="true">
         <CardSkeleton v-for="n of 6" :key="n" />
 
-        <span class="sr-only">Loading repositories…</span>
+        <span class="sr-only">{{ $t('home.loadingRepos') }}</span>
       </div>
 
       <div v-else class="card-list">
@@ -29,16 +29,16 @@
     </section>
 
     <div class="home-footer">
-      <span class="footer-title">Community</span>
+      <span class="footer-title">{{ $t('home.community') }}</span>
 
       <div>
         <a href="https://github.com/CauaKath/my-portfolio" target="_blank">
-          <img src="@/assets/github-icon.png" alt="Github icon">
-          <span>Github Repo</span>
+          <img src="@/assets/github-icon.png" :alt="$t('home.githubAlt')">
+          <span>{{ $t('home.githubRepo') }}</span>
         </a>
         <a href="https://discord.gg/hRsFQ4YfGp" target="_blank">
-          <img src="@/assets/discord-icon.png" alt="Discord icon">
-          <span>Join Discord</span>
+          <img src="@/assets/discord-icon.png" :alt="$t('home.discordAlt')">
+          <span>{{ $t('home.joinDiscord') }}</span>
         </a>
       </div>
     </div>

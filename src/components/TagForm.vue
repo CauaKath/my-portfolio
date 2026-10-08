@@ -1,9 +1,9 @@
 <template>
   <form class="tag-form" @submit.prevent="submit">
-    <input class="tag-name" v-model="name" type="text" placeholder="tag-name" maxlength="40" autocapitalize="none" spellcheck="false" />
-    <input class="tag-description" v-model="description" type="text" placeholder="Description (shown on hover)" />
+    <input class="tag-name" v-model="name" type="text" :placeholder="t('tagForm.name')" maxlength="40" autocapitalize="none" spellcheck="false" />
+    <input class="tag-description" v-model="description" type="text" :placeholder="t('tagForm.description')" />
 
-    <div class="swatches" role="radiogroup" aria-label="Color">
+    <div class="swatches" role="radiogroup" :aria-label="t('tagForm.color')">
       <button
         v-for="swatch of TAG_COLORS"
         :key="swatch.hex"
@@ -12,8 +12,8 @@
         type="button"
         role="radio"
         :aria-checked="swatch.hex.toLowerCase() === color.toLowerCase()"
-        :aria-label="swatch.name"
-        :title="swatch.name"
+        :aria-label="t(`tagColors.${swatch.key}`)"
+        :title="t(`tagColors.${swatch.key}`)"
         :style="{ backgroundColor: swatch.hex }"
         @click="color = swatch.hex"
       ></button>
@@ -22,11 +22,11 @@
     <p v-if="shownError" class="tag-form-error">{{ shownError }}</p>
 
     <div class="form-footer">
-      <TagChip :tag="{ name: name || 'preview', color, description: null }" />
+      <TagChip :tag="{ name: name || t('tagForm.preview'), color, description: null }" />
 
       <div class="buttons">
-        <AppButton class="tag-cancel" variant="outlined" :icon="xIcon" label="Cancel" :disabled="busy" @click="emit('cancel')" />
-        <AppButton class="tag-submit" variant="filled" type="submit" :icon="checkIcon" :label="submitLabel" :disabled="busy" />
+        <AppButton class="tag-cancel" variant="outlined" :icon="xIcon" :label="t('common.cancel')" :disabled="busy" @click="emit('cancel')" />
+        <AppButton class="tag-submit" variant="filled" type="submit" :icon="checkIcon" :label="submitLabel || t('common.save')" :disabled="busy" />
       </div>
     </div>
   </form>
@@ -34,6 +34,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import AppButton from '@/components/AppButton.vue'
 import TagChip from '@/components/TagChip.vue'
@@ -44,10 +45,12 @@ import type { ITagInput } from '@/interfaces/tag'
 
 const props = withDefaults(
   defineProps<{ initial?: ITagInput; submitLabel?: string; busy?: boolean; serverError?: string }>(),
-  { submitLabel: 'Save', busy: false, serverError: '' },
+  { submitLabel: '', busy: false, serverError: '' },
 )
 
 const emit = defineEmits<{ submit: [value: ITagInput]; cancel: [] }>()
+
+const { t } = useI18n()
 
 const name = ref(props.initial?.name ?? '')
 const description = ref(props.initial?.description ?? '')
@@ -69,7 +72,7 @@ function submit() {
   const finalName = finalTagName(name.value)
 
   if (!finalName) {
-    error.value = 'A tag needs a name.'
+    error.value = t('tagForm.nameRequired')
     return
   }
 

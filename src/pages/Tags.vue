@@ -1,27 +1,27 @@
 <template>
   <div class="tags-page">
     <div class="tags-card">
-      <RouterLink class="back-link" to="/blog">← Blog</RouterLink>
+      <RouterLink class="back-link" to="/blog">{{ t('common.back') }}</RouterLink>
 
       <div class="page-header">
-        <h1>Tags</h1>
-        <AppButton v-if="!creating" class="new-tag" :icon="plusIcon" @click="startCreating">New tag</AppButton>
+        <h1>{{ t('tags.title') }}</h1>
+        <AppButton v-if="!creating" class="new-tag" :icon="plusIcon" @click="startCreating">{{ t('tags.new') }}</AppButton>
       </div>
 
       <p v-if="error" class="page-error">{{ error }}</p>
 
       <div v-if="creating" class="create-box">
-        <TagForm submit-label="Create tag" :busy="busy" :server-error="formError" @submit="create" @cancel="creating = false" />
+        <TagForm :submit-label="t('tags.create')" :busy="busy" :server-error="formError" @submit="create" @cancel="creating = false" />
       </div>
 
-      <p v-if="loading" class="status">Loading…</p>
-      <p v-else-if="!tags.length" class="status">No tags yet.</p>
+      <p v-if="loading" class="status">{{ t('common.loading') }}</p>
+      <p v-else-if="!tags.length" class="status">{{ t('tags.empty') }}</p>
 
       <ul v-else class="tag-list">
         <li v-for="tag of tags" :key="tag.id" class="tag-row">
           <TagForm
             v-if="editingId === tag.id"
-            submit-label="Save"
+            :submit-label="t('common.save')"
             :initial="{ name: tag.name, description: tag.description, color: tag.color }"
             :busy="busy"
             :server-error="formError"
@@ -32,11 +32,11 @@
           <template v-else>
             <TagChip :tag="tag" />
             <span class="description">{{ tag.description ?? '' }}</span>
-            <span class="count">{{ tag.post_count }} {{ tag.post_count === 1 ? 'post' : 'posts' }}</span>
+            <span class="count">{{ t('tags.count', tag.post_count) }}</span>
 
             <div class="row-actions">
-              <AppButton class="edit-tag" variant="text" :icon="editIcon" :label="`Edit ${tag.name}`" :disabled="busy" @click="startEditing(tag.id)" />
-              <AppButton class="delete-tag" variant="text" danger :icon="trashIcon" :label="`Delete ${tag.name}`" :disabled="busy" @click="remove(tag)" />
+              <AppButton class="edit-tag" variant="text" :icon="editIcon" :label="t('tags.editTag', { name: tag.name })" :disabled="busy" @click="startEditing(tag.id)" />
+              <AppButton class="delete-tag" variant="text" danger :icon="trashIcon" :label="t('tags.deleteTag', { name: tag.name })" :disabled="busy" @click="remove(tag)" />
             </div>
           </template>
         </li>
@@ -45,13 +45,15 @@
 
     <ConfirmModal
       v-model:open="deleteOpen"
-      title="Delete tag"
+      :title="t('tags.deleteTitle')"
       :busy="deleteBusy"
       :error="deleteError"
       @confirm="confirmDelete"
     >
       <template v-if="deleting">
-        Delete the tag <strong>{{ deleting.name }}</strong>?
+        <i18n-t keypath="tags.deletePrompt" tag="span">
+          <template #name><strong>{{ deleting.name }}</strong></template>
+        </i18n-t>
         {{ usageText(deleting) }}
       </template>
     </ConfirmModal>
@@ -60,6 +62,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 
 import AppButton from '@/components/AppButton.vue'
@@ -71,6 +74,8 @@ import plusIcon from '@/assets/icons/plus.svg'
 import editIcon from '@/assets/icons/edit.svg'
 import trashIcon from '@/assets/icons/trash.svg'
 import type { ITagInput, ITagWithCount } from '@/interfaces/tag'
+
+const { t } = useI18n()
 
 const tags = ref<ITagWithCount[]>([])
 const loading = ref(true)
@@ -90,7 +95,7 @@ async function load() {
   try {
     tags.value = await listTagsWithCount()
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Could not load tags.'
+    error.value = err instanceof Error ? err.message : t('tags.loadFailed')
   } finally {
     loading.value = false
   }
@@ -122,7 +127,7 @@ async function run(action: () => Promise<void>, onDone: () => void) {
     await load()
     onDone()
   } catch (err) {
-    formError.value = err instanceof Error ? err.message : 'Something went wrong.'
+    formError.value = err instanceof Error ? err.message : t('tags.failed')
   } finally {
     busy.value = false
   }
@@ -137,9 +142,9 @@ function save(id: string, input: ITagInput) {
 }
 
 function usageText(tag: ITagWithCount) {
-  if (!tag.post_count) return 'No post uses it.'
+  if (!tag.post_count) return t('tags.unused')
 
-  return `It will be removed from ${tag.post_count} ${tag.post_count === 1 ? 'post' : 'posts'}.`
+  return t('tags.usage', tag.post_count)
 }
 
 // Opens the confirmation; nothing is deleted until the modal's Delete is pressed.
@@ -164,7 +169,7 @@ async function confirmDelete() {
     await load()
     deleteOpen.value = false
   } catch (err) {
-    deleteError.value = err instanceof Error ? err.message : 'Could not delete the tag.'
+    deleteError.value = err instanceof Error ? err.message : t('tags.deleteFailed')
   } finally {
     deleteBusy.value = false
   }
