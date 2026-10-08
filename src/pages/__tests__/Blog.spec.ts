@@ -36,10 +36,33 @@ beforeEach(() => {
 })
 
 describe('Blog', () => {
-  it('shows a loading state before data arrives', () => {
+  it('shows skeletons in the real layout before data arrives', () => {
     listPosts.mockReturnValue(new Promise(() => {}))
+    const wrapper = mountBlog()
 
-    expect(mountBlog().find('.loading').exists()).toBe(true)
+    expect(wrapper.findAll('.recent .post')).toHaveLength(3)
+    expect(wrapper.findAll('.all .post')).toHaveLength(3)
+    expect(wrapper.find('.recent').attributes('aria-busy')).toBe('true')
+    expect(wrapper.find('.all').attributes('aria-busy')).toBe('true')
+    expect(wrapper.text()).toContain('Loading posts')
+  })
+
+  it('swaps the skeletons for the posts once loaded', async () => {
+    listPosts.mockResolvedValue([1, 2, 3, 4].map((n) => makePost(n)))
+    const wrapper = mountBlog()
+    await flushPromises()
+
+    expect(wrapper.find('.skeleton').exists()).toBe(false)
+    expect(wrapper.find('.recent').attributes('aria-busy')).toBe('false')
+    expect(wrapper.text()).not.toContain('Loading posts')
+  })
+
+  it('keeps the section headers visible while loading', () => {
+    listPosts.mockReturnValue(new Promise(() => {}))
+    const wrapper = mountBlog()
+
+    expect(wrapper.text()).toContain('RECENT POSTS')
+    expect(wrapper.text()).toContain('ALL POSTS')
   })
 
   it('splits posts into one featured, two secondary, and the rest', async () => {

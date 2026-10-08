@@ -6,12 +6,10 @@
       </div>
     </div>
 
-    <div v-if="loading" class="loading">Loading posts…</div>
-
-    <div v-else-if="error" class="error">{{ error }}</div>
+    <div v-if="error" class="error">{{ error }}</div>
 
     <template v-else>
-      <div class="recent">
+      <div class="recent" :aria-busy="loading">
         <div class="recent-header">
           <span>RECENT POSTS</span>
 
@@ -22,7 +20,18 @@
           </div>
         </div>
 
-        <div v-if="posts.length === 0" class="empty">
+        <!-- Skeletons mirror the real layout (1 featured + 2 beside it) so nothing jumps on load -->
+        <div v-if="loading" class="posts">
+          <BlogPostSkeleton type="most-recent" />
+
+          <div class="second-and-third">
+            <BlogPostSkeleton v-for="n of 2" :key="n" type="other-recent" />
+          </div>
+
+          <span class="sr-only">Loading posts…</span>
+        </div>
+
+        <div v-else-if="posts.length === 0" class="empty">
           No posts yet.
         </div>
 
@@ -37,18 +46,24 @@
 
       <hr class="divider">
 
-      <div class="all">
+      <div class="all" :aria-busy="loading">
         <div class="all-header">
           <span>ALL POSTS</span>
 
           <div class="search-input">
             <img src="@/assets/search-gray.svg" alt="">
-            <input v-model="query" type="text" placeholder="Search for posts" />
+            <input v-model="query" type="text" placeholder="Search for posts" :disabled="loading" />
           </div>
         </div>
 
         <div class="posts">
-          <BlogPost v-for="post of filtered" :key="post.id" :post="post" />
+          <template v-if="loading">
+            <BlogPostSkeleton v-for="n of 3" :key="n" />
+          </template>
+
+          <template v-else>
+            <BlogPost v-for="post of filtered" :key="post.id" :post="post" />
+          </template>
         </div>
       </div>
     </template>
@@ -59,6 +74,7 @@
 import { ref, computed, onMounted } from 'vue'
 import AppButton from '@/components/AppButton.vue'
 import BlogPost from '@/components/BlogPost.vue'
+import BlogPostSkeleton from '@/components/BlogPostSkeleton.vue'
 import { listPosts } from '@/services/posts'
 import { useAuthStore } from '@/stores/auth'
 import type { IPost } from '@/interfaces/post'
