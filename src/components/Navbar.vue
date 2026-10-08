@@ -6,8 +6,8 @@
       </RouterLink>
       
       <ul class="navbar-link-list">
-        <li class="navbar-link" v-for="navigation of navigationList" :key="navigation.name">
-          <RouterLink :to="navigation.path">{{ navigation.name }}</RouterLink>
+        <li class="navbar-link" v-for="navigation of navigationList" :key="navigation.label">
+          <RouterLink :to="navigation.path">{{ $t(navigation.label) }}</RouterLink>
         </li>
       </ul>
 
@@ -17,8 +17,9 @@
 
       <div class="auth">
         <!-- Icon-only so the row keeps the same width whether or not you are signed in -->
-        <AppButton v-if="auth.isAdmin" class="auth-icon" variant="text" :icon="icons.logout" label="Log out" @click="auth.signOut()" />
-        <AppButton v-else class="auth-icon" variant="text" :icon="icons.login" label="Login" to="/login" />
+        <LocaleSwitcher />
+        <AppButton v-if="auth.isAdmin" class="auth-icon" variant="text" :icon="icons.logout" :label="$t('nav.logout')" @click="auth.signOut()" />
+        <AppButton v-else class="auth-icon" variant="text" :icon="icons.login" :label="$t('nav.login')" to="/login" />
       </div>
 
       <AppButton class="burger-menu" variant="text" @click="toggleMenu">
@@ -28,17 +29,21 @@
 
     <div v-if="isMenuOpen" class="burger-menu-modal">
       <ul class="menu-modal-item-list">
-        <li class="menu-modal-item" v-for="navigation of navigationList" :key="navigation.name" @click="toggleMenu">
-          <RouterLink :to="navigation.path">{{ navigation.name }}</RouterLink>
+        <li class="menu-modal-item" v-for="navigation of navigationList" :key="navigation.label" @click="toggleMenu">
+          <RouterLink :to="navigation.path">{{ $t(navigation.label) }}</RouterLink>
+        </li>
+
+        <li class="menu-modal-item">
+          <LocaleSwitcher />
         </li>
 
         <template v-if="auth.isAdmin">
           <li class="menu-modal-item" @click="toggleMenu">
-            <AppButton variant="text" @click="auth.signOut()">Log out</AppButton>
+            <AppButton variant="text" @click="auth.signOut()">{{ $t('nav.logout') }}</AppButton>
           </li>
         </template>
         <li v-else class="menu-modal-item" @click="toggleMenu">
-          <RouterLink to="/login">Login</RouterLink>
+          <RouterLink to="/login">{{ $t('nav.login') }}</RouterLink>
         </li>
       </ul>
     </div>
@@ -48,6 +53,7 @@
 <script lang="ts">
 import { RouterLink } from 'vue-router'
 import AppButton from '@/components/AppButton.vue'
+import LocaleSwitcher from '@/components/LocaleSwitcher.vue'
 import loginIcon from '@/assets/icons/login.svg'
 import logoutIcon from '@/assets/icons/logout.svg'
 import { useAuthStore } from '@/stores/auth'
@@ -57,6 +63,7 @@ export default {
   components: {
     RouterLink,
     AppButton,
+    LocaleSwitcher,
   },
   setup() {
     return { auth: useAuthStore(), icons: { login: loginIcon, logout: logoutIcon } }
@@ -64,10 +71,10 @@ export default {
   data() {
     return {
       navigationList: [
-        { name: 'Resumé', path: '/resume' },
-        { name: 'Blog', path: '/blog' },
-        { name: 'Games', path: '/games' },
-        { name: 'Portfolio', path: '/portfolio' },
+        { label: 'nav.resume', path: '/resume' },
+        { label: 'nav.blog', path: '/blog' },
+        { label: 'nav.games', path: '/games' },
+        { label: 'nav.portfolio', path: '/portfolio' },
       ],
       isMenuOpen: false,
     }
@@ -106,7 +113,7 @@ export default {
     }
 
     .auth {
-      @apply flex items-center shrink-0;
+      @apply flex items-center gap-2 shrink-0;
     }
 
     .burger-menu {

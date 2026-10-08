@@ -1,4 +1,6 @@
 interface TagColor {
+  // Key into the tagColors messages; `name` stays as the English fallback.
+  key: string
   name: string
   hex: string
 }
@@ -7,20 +9,20 @@ interface TagColor {
 // (two rows of seven). They are Tailwind's default palette, mostly the 600
 // shade, which keeps white chip text readable; the comments name the source.
 const TAG_COLORS: TagColor[] = [
-  { name: 'Light gray', hex: '#CBD5E1' }, // slate-300
-  { name: 'Gray', hex: '#475569' }, // slate-600
-  { name: 'Brown', hex: '#92400E' }, // amber-800
-  { name: 'Yellow', hex: '#CA8A04' }, // yellow-600
-  { name: 'Orange', hex: '#EA580C' }, // orange-600
-  { name: 'Green', hex: '#16A34A' }, // green-600
-  { name: 'Teal', hex: '#0D9488' }, // teal-600
-  { name: 'Blue', hex: '#2563EB' }, // blue-600
-  { name: 'Sky', hex: '#0284C7' }, // sky-600
-  { name: 'Indigo', hex: '#4F46E5' }, // indigo-600
-  { name: 'Violet', hex: '#7C3AED' }, // violet-600
-  { name: 'Fuchsia', hex: '#C026D3' }, // fuchsia-600
-  { name: 'Pink', hex: '#DB2777' }, // pink-600
-  { name: 'Red', hex: '#DC2626' }, // red-600
+  { key: 'lightGray', name: 'Light gray', hex: '#CBD5E1' }, // slate-300
+  { key: 'gray', name: 'Gray', hex: '#475569' }, // slate-600
+  { key: 'brown', name: 'Brown', hex: '#92400E' }, // amber-800
+  { key: 'yellow', name: 'Yellow', hex: '#CA8A04' }, // yellow-600
+  { key: 'orange', name: 'Orange', hex: '#EA580C' }, // orange-600
+  { key: 'green', name: 'Green', hex: '#16A34A' }, // green-600
+  { key: 'teal', name: 'Teal', hex: '#0D9488' }, // teal-600
+  { key: 'blue', name: 'Blue', hex: '#2563EB' }, // blue-600
+  { key: 'sky', name: 'Sky', hex: '#0284C7' }, // sky-600
+  { key: 'indigo', name: 'Indigo', hex: '#4F46E5' }, // indigo-600
+  { key: 'violet', name: 'Violet', hex: '#7C3AED' }, // violet-600
+  { key: 'fuchsia', name: 'Fuchsia', hex: '#C026D3' }, // fuchsia-600
+  { key: 'pink', name: 'Pink', hex: '#DB2777' }, // pink-600
+  { key: 'red', name: 'Red', hex: '#DC2626' }, // red-600
 ]
 
 const DEFAULT_TAG_COLOR = '#2563EB'

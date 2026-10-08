@@ -2,7 +2,7 @@
   <div class="blog">
     <div class="banner">
       <div>
-        <h1>Welcome to my Blog</h1>
+        <h1>{{ t('blog.welcome') }}</h1>
       </div>
     </div>
 
@@ -11,12 +11,12 @@
     <template v-else>
       <div class="recent" :aria-busy="loading">
         <div class="recent-header">
-          <span>RECENT POSTS</span>
+          <span>{{ t('blog.recent') }}</span>
 
           <div class="search-box">
-            <AppButton v-if="auth.isAdmin" class="tags-button" to="/tags">Tags</AppButton>
+            <AppButton v-if="auth.isAdmin" class="tags-button" to="/tags">{{ t('blog.tags') }}</AppButton>
 
-            <AppButton v-if="auth.isAdmin" class="add-button" to="/blog/new" :icon="plusIcon">Add</AppButton>
+            <AppButton v-if="auth.isAdmin" class="add-button" to="/blog/new" :icon="plusIcon">{{ t('blog.add') }}</AppButton>
           </div>
         </div>
 
@@ -28,11 +28,11 @@
             <BlogPostSkeleton v-for="n of 2" :key="n" type="other-recent" />
           </div>
 
-          <span class="sr-only">Loading posts…</span>
+          <span class="sr-only">{{ t('blog.loadingPosts') }}</span>
         </div>
 
         <div v-else-if="posts.length === 0" class="empty">
-          No posts yet.
+          {{ t('blog.empty') }}
         </div>
 
         <div v-else class="posts">
@@ -48,11 +48,11 @@
 
       <div class="all" :aria-busy="loading">
         <div class="all-header">
-          <span>ALL POSTS</span>
+          <span>{{ t('blog.all') }}</span>
 
           <div class="search-input">
             <img src="@/assets/search-gray.svg" alt="">
-            <input v-model="query" type="text" placeholder="Search for posts" :disabled="loading" />
+            <input v-model="query" type="text" :placeholder="t('blog.search')" :disabled="loading" />
           </div>
         </div>
 
@@ -72,6 +72,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import AppButton from '@/components/AppButton.vue'
 import BlogPost from '@/components/BlogPost.vue'
 import BlogPostSkeleton from '@/components/BlogPostSkeleton.vue'
@@ -80,6 +81,7 @@ import { useAuthStore } from '@/stores/auth'
 import type { IPost } from '@/interfaces/post'
 import plusIcon from '@/assets/icons/plus.svg'
 
+const { t } = useI18n()
 const auth = useAuthStore()
 
 const posts = ref<IPost[]>([])
@@ -108,7 +110,7 @@ onMounted(async () => {
   try {
     posts.value = await listPosts()
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Could not load posts.'
+    error.value = err instanceof Error ? err.message : t('blog.loadFailed')
   } finally {
     loading.value = false
   }

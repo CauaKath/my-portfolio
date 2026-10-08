@@ -2,22 +2,22 @@
   <div class="card">
     <div class="card-texts">
       <h2>{{ title }}</h2>
-      <h5>{{ description ?? 'No description provided.' }}</h5>
+      <h5>{{ description ?? $t('card.noDescription') }}</h5>
     </div>
 
     <div class="card-content">
       <div class="card-numbers">
         <span class="card-stars">
-          <img src="@/assets/git-star.svg" alt="Github star icon">
+          <img src="@/assets/git-star.svg" :alt="$t('card.starAlt')">
           <span>{{ stars }}</span>
         </span>
         <span class="card-forks">
-          <img src="@/assets/git-fork.svg" alt="Github fork icon">
+          <img src="@/assets/git-fork.svg" :alt="$t('card.forkAlt')">
           <span>{{ forks }}</span>
         </span>
       </div>
 
-      <img class="lang-icon" :src="getLanguageIcon(language)" alt="Language icon">
+      <img class="lang-icon" :src="getLanguageIcon(language)" :alt="$t('card.languageAlt')">
     </div>
   </div>
 </template>

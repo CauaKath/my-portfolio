@@ -1,12 +1,12 @@
 <template>
   <div class="detail">
-    <div v-if="loading" class="loading">Loading…</div>
+    <div v-if="loading" class="loading">{{ t('common.loading') }}</div>
 
     <div v-else-if="error" class="error">{{ error }}</div>
 
     <div v-else-if="!post" class="not-found">
-      <h1>Post not found</h1>
-      <RouterLink to="/blog">Back to the blog</RouterLink>
+      <h1>{{ t('post.notFound') }}</h1>
+      <RouterLink to="/blog">{{ t('post.backToBlog') }}</RouterLink>
     </div>
 
     <article v-else class="article">
@@ -14,9 +14,9 @@
 
       <div class="article-inner">
       <div class="top-row">
-        <RouterLink class="back-link" to="/blog">← Blog</RouterLink>
+        <RouterLink class="back-link" to="/blog">{{ t('common.back') }}</RouterLink>
 
-        <AppButton v-if="auth.isAdmin" class="edit-link" variant="float" :icon="editIcon" label="Edit post" :to="`/blog/${post.slug}/edit`" />
+        <AppButton v-if="auth.isAdmin" class="edit-link" variant="float" :icon="editIcon" :label="t('post.edit')" :to="`/blog/${post.slug}/edit`" />
       </div>
 
       <header>
@@ -25,11 +25,11 @@
         <div class="meta">
           <span class="post-date">{{ displayDate }}</span>
 
-          <span class="pill">{{ readTime }} min read</span>
+          <span class="pill">{{ t('common.minRead', { n: readTime }) }}</span>
 
           <TagChip v-for="tag of post.tags" :key="tag.id" :tag="tag" />
 
-          <span v-if="post.status === 'DRAFT'" class="draft-badge">DRAFT</span>
+          <span v-if="post.status === 'DRAFT'" class="draft-badge">{{ t('common.draft') }}</span>
         </div>
 
         <p v-if="post.description" class="description">{{ post.description }}</p>
@@ -46,6 +46,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 
 import { getPostBySlug } from '@/services/posts'
@@ -56,11 +57,13 @@ import PostToc from '@/components/PostToc.vue'
 import { renderMarkdownWithToc } from '@/lib/markdown'
 import { readTimeMinutes } from '@/lib/readTime'
 import { useAuthStore } from '@/stores/auth'
+import { dateLocale } from '@/i18n'
 import type { IPost } from '@/interfaces/post'
 import editIcon from '@/assets/icons/edit.svg'
 
 const props = defineProps<{ slug: string }>()
 
+const { t, locale } = useI18n()
 const auth = useAuthStore()
 
 const post = ref<IPost | null>(null)
@@ -75,7 +78,7 @@ const displayDate = computed(() => {
 
   const iso = post.value.published_at ?? post.value.updated_at
 
-  return new Date(iso).toLocaleDateString('en-US', {
+  return new Date(iso).toLocaleDateString(dateLocale(locale.value), {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -89,7 +92,7 @@ onMounted(async () => {
     // row either way, so a draft's existence never leaks.
     post.value = await getPostBySlug(props.slug)
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Could not load this post.'
+    error.value = err instanceof Error ? err.message : t('post.loadFailed')
   } finally {
     loading.value = false
   }

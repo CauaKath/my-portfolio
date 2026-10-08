@@ -1,17 +1,17 @@
 <template>
   <div class="editor">
-    <div v-if="loading" class="loading">Loading…</div>
+    <div v-if="loading" class="loading">{{ t('common.loading') }}</div>
 
     <template v-else>
       <div class="topbar">
         <div class="topbar-inner">
-          <RouterLink class="back-link" to="/blog">← Blog</RouterLink>
+          <RouterLink class="back-link" to="/blog">{{ t('common.back') }}</RouterLink>
 
           <div class="actions">
-            <AppButton class="save-draft" variant="outlined" :icon="saveIcon" label="Save draft" :disabled="saving" @click="save('DRAFT')" />
-            <AppButton v-if="!isPublished" class="publish" variant="filled" :icon="sendIcon" label="Publish" :disabled="saving" @click="save('PUBLISHED')" />
-            <AppButton v-else class="unpublish" variant="filled" :icon="eyeOffIcon" label="Unpublish" :disabled="saving" @click="save('DRAFT')" />
-            <AppButton v-if="isEditing" class="delete" variant="outlined" danger :icon="trashIcon" label="Delete post" :disabled="saving" @click="askRemove" />
+            <AppButton class="save-draft" variant="outlined" :icon="saveIcon" :label="t('editor.saveDraft')" :disabled="saving" @click="save('DRAFT')" />
+            <AppButton v-if="!isPublished" class="publish" variant="filled" :icon="sendIcon" :label="t('editor.publish')" :disabled="saving" @click="save('PUBLISHED')" />
+            <AppButton v-else class="unpublish" variant="filled" :icon="eyeOffIcon" :label="t('editor.unpublish')" :disabled="saving" @click="save('DRAFT')" />
+            <AppButton v-if="isEditing" class="delete" variant="outlined" danger :icon="trashIcon" :label="t('editor.deletePost')" :disabled="saving" @click="askRemove" />
           </div>
         </div>
       </div>
@@ -21,7 +21,7 @@
           <div class="cover-actions">
             <AppButton class="cover-button" variant="float" :icon="uploadIcon" :label="coverLabel" @click="coverInput?.click()" />
 
-            <AppButton v-if="coverUrl" class="cover-remove" variant="float" danger :icon="trashIcon" label="Remove cover" @click="removeCover" />
+            <AppButton v-if="coverUrl" class="cover-remove" variant="float" danger :icon="trashIcon" :label="t('editor.removeCover')" @click="removeCover" />
 
             <input ref="coverInput" class="cover-input" type="file" accept="image/*" hidden @change="onCoverSelected" />
           </div>
@@ -30,8 +30,8 @@
         <div class="column-inner">
         <p v-if="formError" class="form-error">{{ formError }}</p>
 
-        <input class="title-input" v-model="title" type="text" placeholder="Title" />
-        <input class="description-input" v-model="description" type="text" placeholder="Short description" />
+        <input class="title-input" v-model="title" type="text" :placeholder="t('editor.title')" />
+        <input class="description-input" v-model="description" type="text" :placeholder="t('editor.description')" />
 
         <TagPicker v-model="tagIds" />
 
@@ -42,18 +42,18 @@
             :aria-selected="mode === 'edit'"
             :class="{ active: mode === 'edit' }"
             @click="mode = 'edit'"
-          >Edit</button>
+          >{{ t('editor.edit') }}</button>
           <button
             class="tab-preview"
             role="tab"
             :aria-selected="mode === 'preview'"
             :class="{ active: mode === 'preview' }"
             @click="mode = 'preview'"
-          >Preview</button>
+          >{{ t('editor.preview') }}</button>
         </div>
 
         <!-- v-show keeps the textarea mounted so its cursor and undo history survive a toggle -->
-        <textarea v-show="mode === 'edit'" class="body-input" v-model="body" placeholder="Write your post in markdown…"></textarea>
+        <textarea v-show="mode === 'edit'" class="body-input" v-model="body" :placeholder="t('editor.body')"></textarea>
 
         <!-- renderMarkdown sanitizes via DOMPurify before this reaches v-html -->
         <div v-if="mode === 'preview'" class="preview prose-post" v-html="preview"></div>
@@ -63,8 +63,8 @@
 
     <ConfirmModal
       v-model:open="confirmingDelete"
-      title="Delete post"
-      message="Delete this post permanently? This cannot be undone."
+      :title="t('editor.deleteTitle')"
+      :message="t('editor.deleteMessage')"
       :busy="saving"
       :error="deleteError"
       @confirm="remove"
@@ -74,6 +74,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
 import {
@@ -99,6 +100,7 @@ import eyeOffIcon from '@/assets/icons/eye-off.svg'
 
 const props = defineProps<{ slug?: string }>()
 
+const { t } = useI18n()
 const router = useRouter()
 
 const id = ref<string | null>(null)
@@ -120,7 +122,7 @@ const deleteError = ref('')
 
 const isEditing = computed(() => Boolean(props.slug))
 const isPublished = computed(() => status.value === 'PUBLISHED')
-const coverLabel = computed(() => (coverUrl.value ? 'Replace cover' : 'Upload cover'))
+const coverLabel = computed(() => (coverUrl.value ? t('editor.replaceCover') : t('editor.uploadCover')))
 const preview = computed(() => renderMarkdown(body.value))
 
 onMounted(async () => {
@@ -129,7 +131,7 @@ onMounted(async () => {
       const post = await getPostBySlug(props.slug)
 
       if (!post) {
-        formError.value = 'Post not found.'
+        formError.value = t('editor.notFound')
       } else {
         id.value = post.id
         title.value = post.title
@@ -142,7 +144,7 @@ onMounted(async () => {
       }
     }
   } catch (err) {
-    formError.value = err instanceof Error ? err.message : 'Could not load the post.'
+    formError.value = err instanceof Error ? err.message : t('editor.loadFailed')
   } finally {
     loading.value = false
   }
@@ -158,7 +160,7 @@ async function onCoverSelected(event: Event) {
   try {
     coverUrl.value = await uploadCover(file)
   } catch (err) {
-    formError.value = err instanceof Error ? err.message : 'Cover upload failed.'
+    formError.value = err instanceof Error ? err.message : t('editor.coverFailed')
   }
 }
 
@@ -170,7 +172,7 @@ function removeCover() {
 
 async function save(nextStatus: PostStatus) {
   if (!title.value.trim()) {
-    formError.value = 'A title is required.'
+    formError.value = t('editor.titleRequired')
     return
   }
 
@@ -198,7 +200,7 @@ async function save(nextStatus: PostStatus) {
       router.push(`/blog/${created.slug}`)
     }
   } catch (err) {
-    formError.value = err instanceof Error ? err.message : 'Save failed.'
+    formError.value = err instanceof Error ? err.message : t('editor.saveFailed')
   } finally {
     saving.value = false
   }
@@ -220,7 +222,7 @@ async function remove() {
     await deletePost(id.value)
     router.push('/blog')
   } catch (err) {
-    deleteError.value = err instanceof Error ? err.message : 'Delete failed.'
+    deleteError.value = err instanceof Error ? err.message : t('editor.deleteFailed')
     saving.value = false
   }
 }

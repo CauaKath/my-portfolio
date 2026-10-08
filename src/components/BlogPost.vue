@@ -6,8 +6,8 @@
       <div class="post-main">
         <div class="post-texts">
           <span class="post-date">
-            {{ displayDate }} • {{ readTime }} min read
-            <span v-if="post.status === 'DRAFT'" class="draft-badge">DRAFT</span>
+            {{ displayDate }} • {{ t('common.minRead', { n: readTime }) }}
+            <span v-if="post.status === 'DRAFT'" class="draft-badge">{{ t('common.draft') }}</span>
           </span>
           <span class="post-title">{{ post.title }}</span>
           <span class="post-description">{{ post.description ?? '' }}</span>
@@ -23,10 +23,12 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 
 import TagChip from '@/components/TagChip.vue'
 import { readTimeMinutes } from '@/lib/readTime'
+import { dateLocale } from '@/i18n'
 import type { IPost } from '@/interfaces/post'
 
 const props = withDefaults(
@@ -36,6 +38,8 @@ const props = withDefaults(
   }>(),
   { type: 'default' },
 )
+
+const { t, locale } = useI18n()
 
 const readTime = computed(() => readTimeMinutes(props.post.body))
 
@@ -47,7 +51,7 @@ const coverStyle = computed(() => ({
 const displayDate = computed(() => {
   const iso = props.post.published_at ?? props.post.updated_at
 
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  return new Date(iso).toLocaleDateString(dateLocale(locale.value), { month: 'short', day: 'numeric' })
 })
 </script>
 
