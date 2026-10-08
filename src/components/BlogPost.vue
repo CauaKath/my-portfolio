@@ -136,6 +136,7 @@ const displayDate = computed(() => {
 
         .post-date {
           @apply
+            font-mono
             bg-gradient-to-r from-register-from to-register-to
             inline-block
             text-transparent
@@ -144,6 +145,7 @@ const displayDate = computed(() => {
 
         .draft-badge {
           @apply
+            font-mono
             ml-2
             bg-primary-default
             text-white

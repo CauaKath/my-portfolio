@@ -4,10 +4,10 @@
       <h1>Sign in</h1>
       <p>This blog has a single author. Signing in gives you nothing unless you are it.</p>
 
-      <button class="github-btn" :disabled="loading" @click="signIn">
+      <AppButton class="github-btn" variant="filled" :disabled="loading" @click="signIn">
         <img src="@/assets/github-icon.png" alt="">
         <span>{{ loading ? 'Redirecting…' : 'Continue with GitHub' }}</span>
-      </button>
+      </AppButton>
 
       <p v-if="error" class="error">{{ error }}</p>
     </div>
@@ -16,6 +16,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import AppButton from '@/components/AppButton.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
@@ -51,8 +52,6 @@ async function signIn() {
     }
 
     .github-btn {
-      @apply flex items-center justify-center gap-2 bg-primary-default text-white rounded-full px-6 py-3 disabled:opacity-60;
-
       img {
         @apply w-5 h-5;
       }

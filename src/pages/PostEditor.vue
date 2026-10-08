@@ -8,10 +8,10 @@
           <RouterLink class="back-link" to="/blog">← Blog</RouterLink>
 
           <div class="actions">
-            <button class="save-draft" :disabled="saving" @click="save('DRAFT')">Save draft</button>
-            <button v-if="!isPublished" class="publish" :disabled="saving" @click="save('PUBLISHED')">Publish</button>
-            <button v-else class="unpublish" :disabled="saving" @click="save('DRAFT')">Unpublish</button>
-            <button v-if="isEditing" class="delete" :disabled="saving" @click="remove">Delete</button>
+            <AppButton class="save-draft" variant="outlined" :icon="saveIcon" label="Save draft" :disabled="saving" @click="save('DRAFT')" />
+            <AppButton v-if="!isPublished" class="publish" variant="filled" :icon="sendIcon" label="Publish" :disabled="saving" @click="save('PUBLISHED')" />
+            <AppButton v-else class="unpublish" variant="filled" :icon="eyeOffIcon" label="Unpublish" :disabled="saving" @click="save('DRAFT')" />
+            <AppButton v-if="isEditing" class="delete" variant="outlined" danger :icon="trashIcon" label="Delete post" :disabled="saving" @click="remove" />
           </div>
         </div>
       </div>
@@ -19,23 +19,11 @@
       <div class="column">
         <PostCover :url="coverUrl">
           <div class="cover-actions">
-            <label class="cover-button" :title="coverLabel" :aria-label="coverLabel">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="17 8 12 3 7 8" />
-                <line x1="12" y1="3" x2="12" y2="15" />
-              </svg>
-              <input type="file" accept="image/*" @change="onCoverSelected" />
-            </label>
+            <AppButton class="cover-button" variant="float" :icon="uploadIcon" :label="coverLabel" @click="coverInput?.click()" />
 
-            <button v-if="coverUrl" class="cover-remove" type="button" title="Remove cover" aria-label="Remove cover" @click="removeCover">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <polyline points="3 6 5 6 21 6" />
-                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                <path d="M10 11v6M14 11v6" />
-                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-              </svg>
-            </button>
+            <AppButton v-if="coverUrl" class="cover-remove" variant="float" danger :icon="trashIcon" label="Remove cover" @click="removeCover" />
+
+            <input ref="coverInput" class="cover-input" type="file" accept="image/*" hidden @change="onCoverSelected" />
           </div>
         </PostCover>
 
@@ -88,10 +76,16 @@ import {
   uploadCover,
 } from '@/services/posts'
 import TagPicker from '@/components/TagPicker.vue'
+import AppButton from '@/components/AppButton.vue'
 import PostCover from '@/components/PostCover.vue'
 import { renderMarkdown } from '@/lib/markdown'
 import { uniqueSlug } from '@/lib/slug'
 import type { PostStatus } from '@/interfaces/post'
+import uploadIcon from '@/assets/icons/upload.svg'
+import trashIcon from '@/assets/icons/trash.svg'
+import saveIcon from '@/assets/icons/save.svg'
+import sendIcon from '@/assets/icons/send.svg'
+import eyeOffIcon from '@/assets/icons/eye-off.svg'
 
 const props = defineProps<{ slug?: string }>()
 
@@ -106,6 +100,7 @@ const coverUrl = ref<string | null>(null)
 const status = ref<PostStatus>('DRAFT')
 const existingSlug = ref<string | null>(null)
 
+const coverInput = ref<HTMLInputElement | null>(null)
 const mode = ref<'edit' | 'preview'>('edit')
 const loading = ref(true)
 const saving = ref(false)
@@ -234,22 +229,6 @@ async function remove() {
 
     .actions {
       @apply flex gap-2;
-
-      button {
-        @apply text-xs px-3 py-1.5 rounded-full border transition-colors disabled:opacity-60;
-      }
-
-      .save-draft {
-        @apply border-slate-300 text-slate-600 hover:border-slate-800 hover:text-slate-800;
-      }
-
-      .publish, .unpublish {
-        @apply border-slate-800 bg-slate-800 text-white hover:bg-slate-700;
-      }
-
-      .delete {
-        @apply border-red-200 text-red-600 hover:border-red-600;
-      }
     }
   }
 
@@ -258,26 +237,6 @@ async function remove() {
 
     .cover-actions {
       @apply absolute bottom-3 left-3 flex gap-2;
-
-      .cover-button, .cover-remove {
-        @apply flex items-center justify-center w-8 h-8 bg-white/90 rounded-full shadow cursor-pointer hover:bg-white;
-
-        svg {
-          @apply w-4 h-4;
-        }
-      }
-
-      .cover-button {
-        @apply text-slate-800;
-
-        input {
-          @apply hidden;
-        }
-      }
-
-      .cover-remove {
-        @apply text-red-600;
-      }
     }
 
     .column-inner {

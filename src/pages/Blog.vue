@@ -16,14 +16,9 @@
           <span>RECENT POSTS</span>
 
           <div class="search-box">
-            <RouterLink v-if="auth.isAdmin" class="tags-button" to="/tags">
-              <span>Tags</span>
-            </RouterLink>
+            <AppButton v-if="auth.isAdmin" class="tags-button" to="/tags">Tags</AppButton>
 
-            <RouterLink v-if="auth.isAdmin" class="add-button" to="/blog/new">
-              <img src="@/assets/add.svg" alt="">
-              <span>Add</span>
-            </RouterLink>
+            <AppButton v-if="auth.isAdmin" class="add-button" to="/blog/new" :icon="plusIcon">Add</AppButton>
           </div>
         </div>
 
@@ -62,12 +57,12 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { RouterLink } from 'vue-router'
-
+import AppButton from '@/components/AppButton.vue'
 import BlogPost from '@/components/BlogPost.vue'
 import { listPosts } from '@/services/posts'
 import { useAuthStore } from '@/stores/auth'
 import type { IPost } from '@/interfaces/post'
+import plusIcon from '@/assets/icons/plus.svg'
 
 const auth = useAuthStore()
 
@@ -191,37 +186,6 @@ onMounted(async () => {
           items-center
           gap-6
           w-[60%];
-
-        .tags-button {
-          @apply
-            flex
-            justify-center
-            items-center
-            px-4
-            py-2
-            text-sm
-            border
-            border-primary-default
-            text-primary-default
-            rounded-full
-            cursor-pointer;
-        }
-
-        .add-button {
-          @apply
-            w-24
-            flex
-            justify-start
-            items-center
-            gap-3
-            px-3
-            py-2
-            text-sm
-            bg-primary-default
-            text-white
-            rounded-full
-            cursor-pointer;
-        }
       }
     }
 

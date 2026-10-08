@@ -13,7 +13,11 @@
       <PostCover :url="post.cover_url" />
 
       <div class="article-inner">
-      <RouterLink class="back-link" to="/blog">← Blog</RouterLink>
+      <div class="top-row">
+        <RouterLink class="back-link" to="/blog">← Blog</RouterLink>
+
+        <AppButton v-if="auth.isAdmin" class="edit-link" variant="float" :icon="editIcon" label="Edit post" :to="`/blog/${post.slug}/edit`" />
+      </div>
 
       <header>
         <h1>{{ post.title }}</h1>
@@ -26,10 +30,6 @@
           <TagChip v-for="tag of post.tags" :key="tag.id" :tag="tag" />
 
           <span v-if="post.status === 'DRAFT'" class="draft-badge">DRAFT</span>
-
-          <RouterLink v-if="auth.isAdmin" class="edit-link" :to="`/blog/${post.slug}/edit`">
-            Edit
-          </RouterLink>
         </div>
 
         <p v-if="post.description" class="description">{{ post.description }}</p>
@@ -50,12 +50,14 @@ import { RouterLink } from 'vue-router'
 
 import { getPostBySlug } from '@/services/posts'
 import TagChip from '@/components/TagChip.vue'
+import AppButton from '@/components/AppButton.vue'
 import PostCover from '@/components/PostCover.vue'
 import PostToc from '@/components/PostToc.vue'
 import { renderMarkdownWithToc } from '@/lib/markdown'
 import { readTimeMinutes } from '@/lib/readTime'
 import { useAuthStore } from '@/stores/auth'
 import type { IPost } from '@/interfaces/post'
+import editIcon from '@/assets/icons/edit.svg'
 
 const props = defineProps<{ slug: string }>()
 
@@ -113,8 +115,12 @@ onMounted(async () => {
       @apply p-8 flex flex-col gap-6;
     }
 
-    .back-link {
-      @apply font-mono text-sm font-bold text-slate-800 w-fit;
+    .top-row {
+      @apply flex items-center justify-between;
+
+      .back-link {
+        @apply font-mono text-sm font-bold text-slate-800;
+      }
     }
 
     header {
@@ -137,12 +143,9 @@ onMounted(async () => {
         }
 
         .draft-badge {
-          @apply bg-slate-800 text-white px-2 py-0.5 rounded-full;
+          @apply font-mono bg-slate-800 text-white px-2 py-0.5 rounded-full;
         }
 
-        .edit-link {
-          @apply text-slate-500 underline underline-offset-2;
-        }
       }
 
       .description {

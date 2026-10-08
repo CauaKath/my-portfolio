@@ -17,25 +17,13 @@
 
       <div class="auth">
         <!-- Icon-only so the row keeps the same width whether or not you are signed in -->
-        <button v-if="auth.isAdmin" class="auth-icon" title="Log out" aria-label="Log out" @click="auth.signOut()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-            <polyline points="16 17 21 12 16 7" />
-            <line x1="21" y1="12" x2="9" y2="12" />
-          </svg>
-        </button>
-        <RouterLink v-else class="auth-icon" to="/login" title="Login" aria-label="Login">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-            <polyline points="10 17 15 12 10 7" />
-            <line x1="15" y1="12" x2="3" y2="12" />
-          </svg>
-        </RouterLink>
+        <AppButton v-if="auth.isAdmin" class="auth-icon" variant="text" :icon="icons.logout" label="Log out" @click="auth.signOut()" />
+        <AppButton v-else class="auth-icon" variant="text" :icon="icons.login" label="Login" to="/login" />
       </div>
 
-      <button class="burger-menu" @click="toggleMenu">
+      <AppButton class="burger-menu" variant="text" @click="toggleMenu">
         <img src="@/assets/burger-menu-icon.svg" alt="Burger menu">
-      </button>
+      </AppButton>
     </nav>
 
     <div v-if="isMenuOpen" class="burger-menu-modal">
@@ -46,7 +34,7 @@
 
         <template v-if="auth.isAdmin">
           <li class="menu-modal-item" @click="toggleMenu">
-            <button @click="auth.signOut()">Log out</button>
+            <AppButton variant="text" @click="auth.signOut()">Log out</AppButton>
           </li>
         </template>
         <li v-else class="menu-modal-item" @click="toggleMenu">
@@ -59,15 +47,19 @@
 
 <script lang="ts">
 import { RouterLink } from 'vue-router'
+import AppButton from '@/components/AppButton.vue'
+import loginIcon from '@/assets/icons/login.svg'
+import logoutIcon from '@/assets/icons/logout.svg'
 import { useAuthStore } from '@/stores/auth'
 
 export default {
   name: 'Navbar',
   components: {
     RouterLink,
+    AppButton,
   },
   setup() {
-    return { auth: useAuthStore() }
+    return { auth: useAuthStore(), icons: { login: loginIcon, logout: logoutIcon } }
   },
   data() {
     return {
@@ -91,6 +83,8 @@ export default {
 <style lang="scss">
 .header {
   @apply h-[100px] bg-primary-default text-white sticky top-0 z-50;
+  // The navbar is dark, so buttons inside it use the light color.
+  --btn-color: #f4f4f5;
 
   nav {
     @apply flex justify-between gap-12 items-center h-full w-full max-w-content-padded mx-auto px-4;
@@ -113,14 +107,6 @@ export default {
 
     .auth {
       @apply flex items-center shrink-0;
-
-      .auth-icon {
-        @apply flex items-center justify-center w-10 h-10 rounded-full text-text opacity-80 hover:opacity-100 hover:bg-border transition-colors;
-
-        svg {
-          @apply w-5 h-5;
-        }
-      }
     }
 
     .burger-menu {
