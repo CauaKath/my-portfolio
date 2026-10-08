@@ -15,6 +15,9 @@
     "db:push": "supabase db push",
     "db:status": "supabase migration list"
   },
+  "engines": {
+    "node": "24.x"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.109.0",
     "axios": "^1.7.2",
