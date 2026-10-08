@@ -16,16 +16,14 @@
       </div>
 
       <div class="auth">
-        <RouterLink class="navbar-link" to="/login">Login</RouterLink>
-
-        <button class="register-btn">
-          <RouterLink to="/register">Sign up</RouterLink>
-        </button>
+        <!-- Icon-only so the row keeps the same width whether or not you are signed in -->
+        <AppButton v-if="auth.isAdmin" class="auth-icon" variant="text" :icon="icons.logout" label="Log out" @click="auth.signOut()" />
+        <AppButton v-else class="auth-icon" variant="text" :icon="icons.login" label="Login" to="/login" />
       </div>
 
-      <button class="burger-menu" @click="toggleMenu">
+      <AppButton class="burger-menu" variant="text" @click="toggleMenu">
         <img src="@/assets/burger-menu-icon.svg" alt="Burger menu">
-      </button>
+      </AppButton>
     </nav>
 
     <div v-if="isMenuOpen" class="burger-menu-modal">
@@ -34,12 +32,13 @@
           <RouterLink :to="navigation.path">{{ navigation.name }}</RouterLink>
         </li>
 
-        <li class="menu-modal-item" @click="toggleMenu">
+        <template v-if="auth.isAdmin">
+          <li class="menu-modal-item" @click="toggleMenu">
+            <AppButton variant="text" @click="auth.signOut()">Log out</AppButton>
+          </li>
+        </template>
+        <li v-else class="menu-modal-item" @click="toggleMenu">
           <RouterLink to="/login">Login</RouterLink>
-        </li>
-
-        <li class="menu-modal-item" @click="toggleMenu">
-          <RouterLink to="/register">Sign up</RouterLink>
         </li>
       </ul>
     </div>
@@ -48,11 +47,19 @@
 
 <script lang="ts">
 import { RouterLink } from 'vue-router'
+import AppButton from '@/components/AppButton.vue'
+import loginIcon from '@/assets/icons/login.svg'
+import logoutIcon from '@/assets/icons/logout.svg'
+import { useAuthStore } from '@/stores/auth'
 
 export default {
   name: 'Navbar',
   components: {
     RouterLink,
+    AppButton,
+  },
+  setup() {
+    return { auth: useAuthStore(), icons: { login: loginIcon, logout: logoutIcon } }
   },
   data() {
     return {
@@ -76,16 +83,18 @@ export default {
 <style lang="scss">
 .header {
   @apply h-[100px] bg-primary-default text-white sticky top-0 z-50;
+  // The navbar is dark, so buttons inside it use the light color.
+  --btn-color: #f4f4f5;
 
   nav {
-    @apply flex justify-center gap-12 items-center h-full;
+    @apply flex justify-between gap-12 items-center h-full w-full max-w-content-padded mx-auto px-4;
 
     .navbar-icon {
       @apply h-[50px] w-[50px];
     }
 
     .navbar-link-list {
-      @apply flex gap-12;
+      @apply flex gap-12 whitespace-nowrap;
 
       .navbar-link {
         @apply text-base text-text opacity-80;
@@ -97,11 +106,7 @@ export default {
     }
 
     .auth {
-      @apply flex items-center gap-6;
-
-      .register-btn {
-        @apply bg-gradient-to-r from-register-from to-register-to text-white rounded-full px-6 py-2;
-      }
+      @apply flex items-center shrink-0;
     }
 
     .burger-menu {

@@ -1,0 +1,32 @@
+/* Typography for rendered markdown, shared by the post page and the editor
+   preview so what is written is what is read. */
+.prose-post {
+  @apply text-[15px] leading-[1.75] text-slate-600;
+}
+
+.prose-post h1 { @apply text-2xl font-bold text-slate-800 mt-10 mb-3; }
+.prose-post h2 { @apply text-xl font-bold text-slate-800 mt-10 mb-4 pb-2 border-b border-slate-200 scroll-mt-8; }
+.prose-post h3 { @apply text-base font-bold text-slate-800 mt-8 mb-3 scroll-mt-8; }
+.prose-post p { @apply my-4; }
+.prose-post strong { @apply text-slate-800 font-semibold; }
+.prose-post ul { @apply list-disc pl-6 my-4; }
+.prose-post ol { @apply list-decimal pl-6 my-4; }
+.prose-post li { @apply my-1; }
+.prose-post a { @apply text-register-from underline underline-offset-2; }
+.prose-post hr { @apply my-8 border-slate-200; }
+
+.prose-post blockquote {
+  @apply my-6 py-1 px-4 border-l-4 border-slate-300 bg-slate-50 text-slate-600 rounded-r-md;
+}
+.prose-post blockquote p { @apply my-2; }
+
+.prose-post :not(pre) > code {
+  @apply font-mono text-[13px] px-1.5 py-0.5 rounded border border-slate-200 bg-slate-100 text-slate-800;
+}
+.prose-post pre { @apply my-6 rounded-md overflow-x-auto text-[13px] leading-relaxed; }
+.prose-post pre code { @apply font-mono block p-4; }
+
+.prose-post img { @apply max-w-full rounded-md border border-slate-200 my-6; }
+.prose-post table { @apply w-full border-collapse my-6 text-sm; }
+.prose-post th, .prose-post td { @apply border border-slate-200 px-3 py-2 text-left; }
+.prose-post th { @apply bg-slate-50 text-slate-800; }

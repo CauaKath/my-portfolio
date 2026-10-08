@@ -8,8 +8,10 @@
     </div>
 
     <section class="home-content">
-      <div v-if="loading" class="loading">
-        <img src="@/assets/loading-icon.svg" alt="Loading">
+      <div v-if="loading" class="card-list" aria-busy="true">
+        <CardSkeleton v-for="n of 6" :key="n" />
+
+        <span class="sr-only">Loading repositories…</span>
       </div>
 
       <div v-else class="card-list">
@@ -46,6 +48,7 @@
 <script lang="ts">
 import { fetchMostRecentRepos, fetchRepo } from '../services/github'
 import Card from '../components/Card.vue'
+import CardSkeleton from '../components/CardSkeleton.vue'
 
 import { type IRepo } from '@/interfaces/github';
 
@@ -53,11 +56,14 @@ export default {
   name: 'Home',
   components: {
     Card,
+    CardSkeleton,
   },
   data() {
     return {
       repos: [] as IRepo[],
-      loading: false,
+      // True from the start: the repos are fetched on mount, and a first render
+      // with loading=false would flash an empty list before the skeletons.
+      loading: true,
     }
   },
   mounted() {
@@ -118,15 +124,6 @@ export default {
 </script>
 
 <style lang="scss">
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
 .home-header {
   @apply h-40 flex justify-center items-center flex-col border-b-[1px] border-light_border p-4;
 
@@ -151,15 +148,6 @@ export default {
 
     .card {
       flex-grow: 1;
-    }
-  }
-
-  .loading {
-    @apply flex justify-center items-center w-full h-full;
-
-    img {
-      @apply w-12 h-12;
-      animation: spin 1s linear infinite;
     }
   }
 }

@@ -12,6 +12,9 @@ export default {
         },
         text: '#F4F4F5',
         gray_text: '#64748B',
+        // Default AppButton color: navy-blue, close to the navbar but saturated
+        // enough that a tint of it reads blue instead of grey.
+        action: '#1E3A8A',
         background: '#E2E8F0',
         border: '#334155',
         light_border: '#CBD5E1',
@@ -19,10 +22,19 @@ export default {
           from: '#0369A1',
           to: '#0EA5E9'
         }
+      },
+      // Inside `extend` deliberately: as a sibling of `extend` this replaced
+      // Tailwind's whole default font scale, so font-mono/sans/serif did not
+      // exist and any use of them failed the build.
+      // Shared by the navbar row and the blog column so they line up.
+      maxWidth: {
+        content: '792px',
+        // content + the 1rem side padding, for rows whose content must measure exactly `content`
+        'content-padded': 'calc(792px + 2rem)',
+      },
+      fontFamily: {
+        'roboto': ['Roboto', 'sans-serif'],
       }
-    },
-    fontFamily: {
-      'roboto': ['Roboto', 'sans-serif'],
     }
   },
   plugins: [],
