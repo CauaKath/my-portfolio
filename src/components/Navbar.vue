@@ -11,9 +11,14 @@
         </li>
       </ul>
 
-      <div class="search">
-        <img src="@/assets/search-icon.svg" alt="Search icon">
-      </div>
+      <button type="button" class="search" :aria-label="$t('nav.search')" @click="openSearch">
+        <img src="@/assets/search-icon.svg" alt="">
+        <span class="search-hint" aria-hidden="true">
+          <kbd>Ctrl</kbd>
+          <span>+</span>
+          <kbd>K</kbd>
+        </span>
+      </button>
 
       <div class="auth">
         <!-- Icon-only so the row keeps the same width whether or not you are signed in -->
@@ -31,6 +36,10 @@
       <ul class="menu-modal-item-list">
         <li class="menu-modal-item" v-for="navigation of navigationList" :key="navigation.label" @click="toggleMenu">
           <RouterLink :to="navigation.path">{{ $t(navigation.label) }}</RouterLink>
+        </li>
+
+        <li class="menu-modal-item" @click="toggleMenu">
+          <AppButton variant="text" @click="openSearch">{{ $t('nav.search') }}</AppButton>
         </li>
 
         <li class="menu-modal-item">
@@ -57,6 +66,7 @@ import LocaleSwitcher from '@/components/LocaleSwitcher.vue'
 import loginIcon from '@/assets/icons/login.svg'
 import logoutIcon from '@/assets/icons/logout.svg'
 import { useAuthStore } from '@/stores/auth'
+import { openSearch } from '@/lib/search'
 
 export default {
   name: 'Navbar',
@@ -66,7 +76,7 @@ export default {
     LocaleSwitcher,
   },
   setup() {
-    return { auth: useAuthStore(), icons: { login: loginIcon, logout: logoutIcon } }
+    return { auth: useAuthStore(), openSearch, icons: { login: loginIcon, logout: logoutIcon } }
   },
   data() {
     return {
@@ -109,7 +119,15 @@ export default {
     }
 
     .search {
-      @apply flex items-center gap-2 border-border border rounded-md p-2;
+      @apply flex items-center gap-2 border-border border rounded-md p-2 cursor-pointer;
+
+      .search-hint {
+        @apply flex items-center gap-1 text-xs text-text opacity-70;
+
+        kbd {
+          @apply font-sans text-[11px] leading-none px-1.5 py-1 rounded border border-border border-b-2 bg-white/10;
+        }
+      }
     }
 
     .auth {

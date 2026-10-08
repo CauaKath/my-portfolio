@@ -1,5 +1,7 @@
 export default {
   nav: {
+    home: 'Home',
+    search: 'Search',
     resume: 'Resumé',
     blog: 'Blog',
     games: 'Games',
@@ -7,6 +9,15 @@ export default {
     login: 'Login',
     logout: 'Log out',
     language: 'Switch language',
+  },
+  search: {
+    title: 'Search',
+    placeholder: 'Search pages and posts…',
+    page: 'Page',
+    post: 'Post',
+    draft: 'Draft',
+    empty: 'No results.',
+    failed: 'Could not load posts.',
   },
   common: {
     loading: 'Loading…',
