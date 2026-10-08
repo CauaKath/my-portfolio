@@ -59,6 +59,20 @@ If you would rather not use the CLI, paste each file into the SQL editor in
 filename order, one at a time, confirming each succeeds before the next. You
 then have no migration history, so you are tracking what is applied yourself.
 
+### Tags migrations
+
+The `2026100812*` migrations add the `tags` and `post_tags` tables. Apply them in order
+with `db push`, but check the data before the last one:
+
+1. `..120000_tags_schema.sql` and `..120100_tags_policies.sql` create the tables and RLS.
+2. `..120200_tags_backfill.sql` turns the names in the old `posts.tags` array into tags
+   (default color `#0369A1`) and links them to their posts.
+3. `..120300_posts_drop_tags_column.sql` drops `posts.tags`. It is destructive; compare
+   each post's old `tags` with its new links first (the query is in the file's header).
+
+The app reads tags through the new tables, so it needs all four applied. Tag colors and
+descriptions are edited afterwards on the `/tags` page.
+
 ## 4. Make yourself the admin
 
 Sign in to the site once through GitHub. The `on_auth_user_created` trigger
@@ -93,5 +107,5 @@ in to exercise the direct-fetch check as well:
 npm run verify:rls -- <draft-uuid>
 ```
 
-Every check must pass. Re-run this after any change to
-`supabase/migrations/0002_blog_policies.sql`.
+Every check must pass. Re-run this after any change to a policy in
+`supabase/migrations/`.

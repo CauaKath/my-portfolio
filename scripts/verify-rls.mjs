@@ -1,6 +1,6 @@
 // Proves the security claim this feature rests on: an anonymous visitor
 // cannot see drafts. Run after applying the migrations, and after any change
-// to a policy in supabase/migrations/0002_blog_policies.sql.
+// to a policy in supabase/migrations/.
 //
 //   npm run verify:rls
 //
@@ -73,6 +73,25 @@ check('anonymous cannot insert a post', Boolean(insertError), 'insert unexpected
 
 const { data: profiles } = await anon.from('profiles').select('id')
 check('anonymous cannot enumerate profiles', (profiles ?? []).length === 0)
+
+// Tags are public; writing them is not. A draft's post_tags rows must be as
+// invisible as the draft itself.
+const { error: tagsError } = await anon.from('tags').select('id').limit(1)
+check('anonymous can read tags', !tagsError, tagsError?.message)
+
+const { error: tagInsertError } = await anon
+  .from('tags')
+  .insert({ name: `rls-probe-${Date.now()}`, slug: `rls-probe-${Date.now()}` })
+check('anonymous cannot insert a tag', Boolean(tagInsertError), 'insert unexpectedly succeeded')
+
+const { data: links } = await anon.from('post_tags').select('post_id')
+const visibleIds = new Set((posts ?? []).map((post) => post.id))
+const orphanLinks = (links ?? []).filter((link) => !visibleIds.has(link.post_id))
+check(
+  'anonymous sees no post_tags rows of posts it cannot see',
+  orphanLinks.length === 0,
+  orphanLinks.length ? `${orphanLinks.length} link(s) leaked` : '',
+)
 
 if (failures.length) {
   console.error(`\n${failures.length} check(s) failed:`)
