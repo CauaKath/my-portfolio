@@ -1,24 +1,12 @@
 import axios from 'axios';
 
-const GITHUB_API_URL = 'https://api.github.com';
-const GITHUB_API_TOKEN = import.meta.env.VITE_GITHUB_API_TOKEN;
+// Served by the Vercel functions in /api, which hold the GitHub token server-side.
 
 import { type IRepo } from '../interfaces/github';
 
 async function fetchMostRecentRepos() {
   try {
-    const response = await axios.get<IRepo[]>(`${GITHUB_API_URL}/user/repos`, {
-      headers: {
-        Authorization: `Bearer ${GITHUB_API_TOKEN}`,
-      },
-      params: {
-        affiliation: 'owner',
-        visibility: 'public',
-        sort: 'updated',
-        per_page: 10,
-        page: 1,
-      },
-    });
+    const response = await axios.get<IRepo[]>('/api/repos');
 
     return response.data;
   } catch (error) {
@@ -29,11 +17,7 @@ async function fetchMostRecentRepos() {
 
 async function fetchRepo(org: string, repo: string) {
   try {
-    const response = await axios.get<IRepo>(`${GITHUB_API_URL}/repos/${org}/${repo}`, {
-      headers: {
-        Authorization: `Bearer ${GITHUB_API_TOKEN}`,
-      },
-    });
+    const response = await axios.get<IRepo>('/api/repo', { params: { org, repo } });
 
     return response.data;
   } catch (error) {
