@@ -5,6 +5,7 @@ import Blog from '../pages/Blog.vue'
 import PostDetail from '../pages/PostDetail.vue'
 import PostEditor from '../pages/PostEditor.vue'
 import Login from '../pages/Login.vue'
+import Tags from '../pages/Tags.vue'
 
 import { useAuthStore } from '../stores/auth'
 
@@ -17,6 +18,7 @@ const router = createRouter({
     { path: '/blog/new', name: 'post-new', component: PostEditor, meta: { requiresAdmin: true } },
     { path: '/blog/:slug', name: 'post-detail', component: PostDetail, props: true },
     { path: '/blog/:slug/edit', name: 'post-edit', component: PostEditor, props: true, meta: { requiresAdmin: true } },
+    { path: '/tags', name: 'tags', component: Tags, meta: { requiresAdmin: true } },
     { path: '/login', name: 'login', component: Login },
     { path: '/wip', name: 'wip', component: WIP },
     { path: '/:pathMatch(.*)*', redirect: '/wip' },

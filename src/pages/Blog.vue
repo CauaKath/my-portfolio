@@ -16,6 +16,10 @@
           <span>RECENT POSTS</span>
 
           <div class="search-box">
+            <RouterLink v-if="auth.isAdmin" class="tags-button" to="/tags">
+              <span>Tags</span>
+            </RouterLink>
+
             <RouterLink v-if="auth.isAdmin" class="add-button" to="/blog/new">
               <img src="@/assets/add.svg" alt="">
               <span>Add</span>
@@ -187,6 +191,21 @@ onMounted(async () => {
           items-center
           gap-6
           w-[60%];
+
+        .tags-button {
+          @apply
+            flex
+            justify-center
+            items-center
+            px-4
+            py-2
+            text-sm
+            border
+            border-primary-default
+            text-primary-default
+            rounded-full
+            cursor-pointer;
+        }
 
         .add-button {
           @apply

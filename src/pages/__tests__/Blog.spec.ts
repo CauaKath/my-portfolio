@@ -110,6 +110,14 @@ describe('Blog', () => {
     expect(wrapper.findAll('.all .post')).toHaveLength(1)
   })
 
+  it('hides the Tags button from non-admins', async () => {
+    listPosts.mockResolvedValue([])
+    const wrapper = mountBlog()
+    await flushPromises()
+
+    expect(wrapper.find('.tags-button').exists()).toBe(false)
+  })
+
   it('hides the New post button from non-admins', async () => {
     listPosts.mockResolvedValue([])
     const wrapper = mountBlog()
