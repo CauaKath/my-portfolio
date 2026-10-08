@@ -1,3 +1,4 @@
+-- New tags get the default blue (#2563EB) from the column default.
 -- Moves the names in posts.tags into the tags table and links them. Safe to
 -- re-run: every insert is on conflict do nothing. posts.tags is dropped by the
 -- next migration, so check the result before applying that one.

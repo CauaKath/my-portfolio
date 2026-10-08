@@ -26,7 +26,7 @@ managed on their own admin page. Readers see colored chips with the description 
 - RLS: anyone reads `tags`; `post_tags` is readable only when the post is readable (a draft's
   tags do not leak); only admins write either table.
 - A backfill migration turns every distinct name in `posts.tags` into a `tags` row (default
-  color `#0369A1`) and links it. A later, separate migration drops `posts.tags`, so it can be
+  color `#2563EB`) and links it. A later, separate migration drops `posts.tags`, so it can be
   applied only after the backfill has been checked.
 
 ## App

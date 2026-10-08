@@ -60,7 +60,15 @@ describe('createTag', () => {
 
     await createTag({ name: '  Go ', description: ' d ', color: '#0369A1' })
 
-    expect(insert).toHaveBeenCalledWith({ name: 'Go', description: 'd', color: '#0369A1', slug: 'go-2' })
+    expect(insert).toHaveBeenCalledWith({ name: 'go', description: 'd', color: '#0369A1', slug: 'go-2' })
+  })
+
+  it('stores the name lowercase with hyphens instead of spaces', async () => {
+    const insert = mockCreate([], { data: tag, error: null })
+
+    await createTag({ name: 'Data Structure', description: null, color: '#0369A1' })
+
+    expect(insert).toHaveBeenCalledWith(expect.objectContaining({ name: 'data-structure', slug: 'data-structure' }))
   })
 
   it('stores an empty description as null', async () => {
@@ -100,7 +108,7 @@ describe('updateTag', () => {
 
     await updateTag('1', { name: 'Golang', description: null, color: '#112233' })
 
-    expect(update).toHaveBeenCalledWith({ name: 'Golang', description: null, color: '#112233' })
+    expect(update).toHaveBeenCalledWith({ name: 'golang', description: null, color: '#112233' })
     expect(eq).toHaveBeenCalledWith('id', '1')
   })
 })

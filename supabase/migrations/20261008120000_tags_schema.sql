@@ -6,7 +6,7 @@ create table public.tags (
   name        text not null,
   slug        text not null unique,
   description text,
-  color       text not null default '#0369A1' check (color ~ '^#[0-9a-fA-F]{6}$'),
+  color       text not null default '#2563EB' check (color ~ '^#[0-9a-fA-F]{6}$'),
   created_at  timestamptz not null default now()
 );
 

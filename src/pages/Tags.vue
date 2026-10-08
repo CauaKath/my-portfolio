@@ -1,11 +1,11 @@
 <template>
   <div class="tags-page">
-    <div class="card">
+    <div class="tags-card">
       <RouterLink class="back-link" to="/blog">← Blog</RouterLink>
 
       <div class="page-header">
         <h1>Tags</h1>
-        <button v-if="!creating" class="new-tag" @click="startCreating">+ New tag</button>
+        <AppButton v-if="!creating" class="new-tag" :icon="plusIcon" @click="startCreating">New tag</AppButton>
       </div>
 
       <p v-if="error" class="page-error">{{ error }}</p>
@@ -35,8 +35,8 @@
             <span class="count">{{ tag.post_count }} {{ tag.post_count === 1 ? 'post' : 'posts' }}</span>
 
             <div class="row-actions">
-              <button class="edit-tag" :disabled="busy" @click="startEditing(tag.id)">Edit</button>
-              <button class="delete-tag" :disabled="busy" @click="remove(tag)">Delete</button>
+              <AppButton class="edit-tag" variant="text" :icon="editIcon" :label="`Edit ${tag.name}`" :disabled="busy" @click="startEditing(tag.id)" />
+              <AppButton class="delete-tag" variant="text" danger :icon="trashIcon" :label="`Delete ${tag.name}`" :disabled="busy" @click="remove(tag)" />
             </div>
           </template>
         </li>
@@ -49,9 +49,13 @@
 import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 
+import AppButton from '@/components/AppButton.vue'
 import TagChip from '@/components/TagChip.vue'
 import TagForm from '@/components/TagForm.vue'
 import { listTagsWithCount, createTag, updateTag, deleteTag } from '@/services/tags'
+import plusIcon from '@/assets/icons/plus.svg'
+import editIcon from '@/assets/icons/edit.svg'
+import trashIcon from '@/assets/icons/trash.svg'
 import type { ITagInput, ITagWithCount } from '@/interfaces/tag'
 
 const tags = ref<ITagWithCount[]>([])
@@ -127,7 +131,7 @@ function remove(tag: ITagWithCount) {
 .tags-page {
   @apply bg-background min-h-[calc(100vh-100px-60px)] py-16 px-4 flex justify-center;
 
-  .card {
+  .tags-card {
     @apply w-full max-w-content h-fit bg-white rounded-lg shadow-lg p-8 flex flex-col gap-6;
 
     .back-link {
@@ -139,10 +143,6 @@ function remove(tag: ITagWithCount) {
 
       h1 {
         @apply text-2xl font-bold text-slate-800;
-      }
-
-      .new-tag {
-        @apply text-xs px-3 py-1.5 rounded-full border border-slate-800 bg-slate-800 text-white hover:bg-slate-700;
       }
     }
 
@@ -173,15 +173,7 @@ function remove(tag: ITagWithCount) {
         }
 
         .row-actions {
-          @apply flex shrink-0 gap-3 text-xs;
-
-          button {
-            @apply text-slate-500 underline underline-offset-2 hover:text-slate-800 disabled:opacity-60;
-          }
-
-          .delete-tag {
-            @apply text-red-600 hover:text-red-800;
-          }
+          @apply flex shrink-0 gap-1;
         }
       }
     }

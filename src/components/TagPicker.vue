@@ -7,9 +7,7 @@
       </span>
 
       <div class="add-wrap">
-        <button class="add-tag" type="button" aria-haspopup="listbox" :aria-expanded="open" @click="open = !open">
-          + Tag
-        </button>
+        <AppButton class="add-tag" variant="float" :icon="plusIcon" label="Add tag" aria-haspopup="listbox" :aria-expanded="open" @click="open = !open" />
 
         <div v-if="open" class="menu" role="listbox">
           <button v-for="tag of available" :key="tag.id" class="menu-tag" type="button" role="option" @click="add(tag.id)">
@@ -18,7 +16,7 @@
 
           <p v-if="!available.length" class="menu-empty">{{ tags.length ? 'All tags selected' : 'No tags yet' }}</p>
 
-          <button class="new-tag" type="button" @click="startCreating">+ New tag</button>
+          <AppButton class="new-tag" variant="text" :icon="plusIcon" @click="startCreating">New tag</AppButton>
         </div>
       </div>
     </div>
@@ -34,9 +32,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 
+import AppButton from '@/components/AppButton.vue'
 import TagChip from '@/components/TagChip.vue'
 import TagForm from '@/components/TagForm.vue'
 import { listTags, createTag } from '@/services/tags'
+import plusIcon from '@/assets/icons/plus.svg'
 import type { ITag, ITagInput } from '@/interfaces/tag'
 
 // The ids of the selected tags. Ids rather than objects: that is what a post
@@ -114,10 +114,6 @@ async function create(input: ITagInput) {
     .add-wrap {
       @apply relative;
 
-      .add-tag {
-        @apply font-mono text-xs text-slate-500 border border-slate-300 rounded-full px-3 py-1 hover:border-slate-500;
-      }
-
       .menu {
         @apply absolute left-0 top-full mt-2 z-20 w-56 max-h-64 overflow-y-auto bg-white border border-slate-200 rounded-md shadow-lg p-2 flex flex-col gap-1;
 
@@ -130,7 +126,7 @@ async function create(input: ITagInput) {
         }
 
         .new-tag {
-          @apply mt-1 border-t border-slate-200 px-2 pt-2 text-left text-xs text-slate-600 hover:text-slate-800;
+          @apply mt-1 justify-start;
         }
       }
     }

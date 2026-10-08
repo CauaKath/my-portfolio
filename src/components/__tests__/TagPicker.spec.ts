@@ -9,6 +9,7 @@ vi.mock('@/services/tags', () => ({
 vi.mock('@/lib/supabase', () => ({ supabase: {} }))
 
 import TagPicker from '../TagPicker.vue'
+import { TAG_COLORS } from '@/lib/tag'
 
 const tags = [
   { id: 't1', name: 'Go', slug: 'go', description: null, color: '#0369A1' },
@@ -76,11 +77,11 @@ describe('TagPicker', () => {
     await wrapper.find('.add-tag').trigger('click')
     await wrapper.find('.new-tag').trigger('click')
     await wrapper.find('.tag-name').setValue('Rust')
-    await wrapper.find('.tag-color-hex').setValue('#112233')
+    await wrapper.findAll('.swatch')[4].trigger('click')
     await wrapper.find('form').trigger('submit')
     await flushPromises()
 
-    expect(services.createTag).toHaveBeenCalledWith({ name: 'Rust', description: null, color: '#112233' })
+    expect(services.createTag).toHaveBeenCalledWith({ name: 'rust', description: null, color: TAG_COLORS[4].hex })
     expect(wrapper.props('modelValue')).toEqual(['t3'])
     expect(wrapper.find('.create-box').exists()).toBe(false)
     expect(wrapper.find('.selected-tag').text()).toContain('Rust')

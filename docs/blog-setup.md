@@ -66,7 +66,7 @@ with `db push`, but check the data before the last one:
 
 1. `..120000_tags_schema.sql` and `..120100_tags_policies.sql` create the tables and RLS.
 2. `..120200_tags_backfill.sql` turns the names in the old `posts.tags` array into tags
-   (default color `#0369A1`) and links them to their posts.
+   (default color `#2563EB`) and links them to their posts.
 3. `..120300_posts_drop_tags_column.sql` drops `posts.tags`. It is destructive; compare
    each post's old `tags` with its new links first (the query is in the file's header).
 

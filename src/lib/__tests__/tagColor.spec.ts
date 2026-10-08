@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { isHexColor, readableTextColor } from '../tagColor'
+import { TAG_COLORS } from '../tag'
 
 describe('isHexColor', () => {
   it('accepts #RRGGBB in either case', () => {
@@ -25,6 +26,12 @@ describe('readableTextColor', () => {
   it('uses dark text on light backgrounds', () => {
     expect(readableTextColor('#FFFFFF')).toBe('#0F172A')
     expect(readableTextColor('#FDE047')).toBe('#0F172A')
+  })
+
+  it('uses white text on every palette color except light gray', () => {
+    for (const { name, hex } of TAG_COLORS) {
+      expect(readableTextColor(hex), name).toBe(name === 'Light gray' ? '#0F172A' : '#FFFFFF')
+    }
   })
 
   it('falls back to dark text for an invalid color', () => {

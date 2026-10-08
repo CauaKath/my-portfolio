@@ -16,6 +16,7 @@ vi.mock('@/services/tags', () => ({
 vi.mock('@/lib/supabase', () => ({ supabase: {} }))
 
 import Tags from '../Tags.vue'
+import { DEFAULT_TAG_COLOR } from '@/lib/tag'
 
 const go = { id: 't1', name: 'Go', slug: 'go', description: 'Posts about Go', color: '#0369A1', post_count: 2 }
 const vue = { id: 't2', name: 'Vue', slug: 'vue', description: null, color: '#42B883', post_count: 0 }
@@ -70,7 +71,7 @@ describe('Tags page', () => {
     await wrapper.find('.create-box form').trigger('submit')
     await flushPromises()
 
-    expect(services.createTag).toHaveBeenCalledWith({ name: 'Rust', description: null, color: '#0369A1' })
+    expect(services.createTag).toHaveBeenCalledWith({ name: 'rust', description: null, color: DEFAULT_TAG_COLOR })
     expect(services.listTagsWithCount).toHaveBeenCalledTimes(2)
     expect(wrapper.find('.create-box').exists()).toBe(false)
   })
@@ -99,7 +100,7 @@ describe('Tags page', () => {
     await flushPromises()
 
     expect(services.updateTag).toHaveBeenCalledWith('t1', {
-      name: 'Golang', description: 'Posts about Go', color: '#0369A1',
+      name: 'golang', description: 'Posts about Go', color: '#0369A1',
     })
     expect(wrapper.find('.tag-row form').exists()).toBe(false)
   })

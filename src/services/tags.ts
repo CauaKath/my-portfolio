@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { uniqueSlug } from '@/lib/slug'
 import { isHexColor } from '@/lib/tagColor'
+import { finalTagName } from '@/lib/tag'
 import type { ITag, ITagInput, ITagWithCount } from '@/interfaces/tag'
 
 const COLUMNS = 'id, name, slug, description, color'
@@ -18,7 +19,7 @@ function fail(error: { message: string; code?: string }): never {
 // Client-side checks are for feedback; the table's own check constraint and
 // RLS are what actually enforce this.
 function validate(input: ITagInput): ITagInput {
-  const name = input.name.trim()
+  const name = finalTagName(input.name)
 
   if (!name) throw new Error('A tag needs a name.')
   if (!isHexColor(input.color)) throw new Error('Color must be a hex value like #0369A1.')

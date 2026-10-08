@@ -18,16 +18,16 @@ function luminance(hex: string): number {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b
 }
 
-// Whichever of the two text colors has the higher contrast ratio against the
-// background, so a chip stays readable whatever color the author picks.
+// Text is white unless the background is genuinely light. Deliberately not a
+// strict contrast-ratio pick: that chose dark text for the mid-tone yellow,
+// orange, gray and brown tags, and white looks better on all of them. Only
+// very light colors (such as the light gray tag) get dark text.
+const LIGHT_BACKGROUND = 0.5
+
 function readableTextColor(background: string): string {
   if (!isHexColor(background)) return DARK_TEXT
 
-  const bg = luminance(background)
-  const againstLight = 1.05 / (bg + 0.05)
-  const againstDark = (bg + 0.05) / (luminance(DARK_TEXT) + 0.05)
-
-  return againstLight > againstDark ? LIGHT_TEXT : DARK_TEXT
+  return luminance(background) > LIGHT_BACKGROUND ? DARK_TEXT : LIGHT_TEXT
 }
 
 export { isHexColor, readableTextColor }

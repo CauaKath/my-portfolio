@@ -17,6 +17,6 @@ const textColor = computed(() => readableTextColor(props.tag.color))
 
 <style lang="scss" scoped>
 .tag-chip {
-  @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap;
+  @apply inline-flex items-center rounded-full px-2.5 py-0.5 font-mono text-xs whitespace-nowrap;
 }
 </style>
