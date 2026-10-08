@@ -2,6 +2,8 @@ import { Marked } from 'marked'
 import { markedHighlight } from 'marked-highlight'
 import DOMPurify from 'dompurify'
 
+import { slugify } from './slug'
+
 // The default `highlight.js` entry point registers every supported language
 // and adds roughly a megabyte to the bundle. Register only what a post here
 // is plausibly going to contain; anything else falls back to plaintext.
@@ -58,12 +60,54 @@ const marked = new Marked(
   }),
 )
 
-function renderMarkdown(source: string): string {
-  if (!source) return ''
-
-  const raw = marked.parse(source, { async: false }) as string
-
-  return DOMPurify.sanitize(raw, { ADD_ATTR: ['target', 'rel'] })
+interface TocItem {
+  id: string
+  text: string
+  level: 2 | 3
 }
 
-export { renderMarkdown }
+interface RenderedMarkdown {
+  html: string
+  toc: TocItem[]
+}
+
+// Anchors are added after sanitizing, on the already-clean DOM, so a post
+// author cannot choose their own ids and DOMPurify needs no extra config.
+function anchorHeadings(clean: string): RenderedMarkdown {
+  const template = document.createElement('template')
+  template.innerHTML = clean
+
+  const used = new Set<string>()
+  const toc: TocItem[] = []
+
+  template.content.querySelectorAll('h2, h3').forEach((heading) => {
+    const text = heading.textContent?.trim() ?? ''
+    if (!text) return
+
+    const base = slugify(text)
+    let id = base
+    for (let suffix = 2; used.has(id); suffix += 1) id = `${base}-${suffix}`
+
+    used.add(id)
+    heading.id = id
+    toc.push({ id, text, level: heading.tagName === 'H2' ? 2 : 3 })
+  })
+
+  return { html: template.innerHTML, toc }
+}
+
+function renderMarkdownWithToc(source: string): RenderedMarkdown {
+  if (!source) return { html: '', toc: [] }
+
+  const raw = marked.parse(source, { async: false }) as string
+  const clean = DOMPurify.sanitize(raw, { ADD_ATTR: ['target', 'rel'] })
+
+  return anchorHeadings(clean)
+}
+
+function renderMarkdown(source: string): string {
+  return renderMarkdownWithToc(source).html
+}
+
+export { renderMarkdown, renderMarkdownWithToc }
+export type { TocItem }
