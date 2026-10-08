@@ -16,11 +16,21 @@
       </div>
 
       <div class="auth">
-        <template v-if="auth.isAdmin">
-          <RouterLink class="navbar-link" to="/blog/new">New post</RouterLink>
-          <button class="register-btn" @click="auth.signOut()">Log out</button>
-        </template>
-        <RouterLink v-else class="navbar-link" to="/login">Login</RouterLink>
+        <!-- Icon-only so the row keeps the same width whether or not you are signed in -->
+        <button v-if="auth.isAdmin" class="auth-icon" title="Log out" aria-label="Log out" @click="auth.signOut()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+        </button>
+        <RouterLink v-else class="auth-icon" to="/login" title="Login" aria-label="Login">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+            <polyline points="10 17 15 12 10 7" />
+            <line x1="15" y1="12" x2="3" y2="12" />
+          </svg>
+        </RouterLink>
       </div>
 
       <button class="burger-menu" @click="toggleMenu">
@@ -35,9 +45,6 @@
         </li>
 
         <template v-if="auth.isAdmin">
-          <li class="menu-modal-item" @click="toggleMenu">
-            <RouterLink to="/blog/new">New post</RouterLink>
-          </li>
           <li class="menu-modal-item" @click="toggleMenu">
             <button @click="auth.signOut()">Log out</button>
           </li>
@@ -86,14 +93,14 @@ export default {
   @apply h-[100px] bg-primary-default text-white sticky top-0 z-50;
 
   nav {
-    @apply flex justify-center gap-12 items-center h-full;
+    @apply flex justify-between gap-12 items-center h-full w-full max-w-content-padded mx-auto px-4;
 
     .navbar-icon {
       @apply h-[50px] w-[50px];
     }
 
     .navbar-link-list {
-      @apply flex gap-12;
+      @apply flex gap-12 whitespace-nowrap;
 
       .navbar-link {
         @apply text-base text-text opacity-80;
@@ -105,10 +112,14 @@ export default {
     }
 
     .auth {
-      @apply flex items-center gap-6;
+      @apply flex items-center shrink-0;
 
-      .register-btn {
-        @apply bg-gradient-to-r from-register-from to-register-to text-white rounded-full px-6 py-2;
+      .auth-icon {
+        @apply flex items-center justify-center w-10 h-10 rounded-full text-text opacity-80 hover:opacity-100 hover:bg-border transition-colors;
+
+        svg {
+          @apply w-5 h-5;
+        }
       }
     }
 

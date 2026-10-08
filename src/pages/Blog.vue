@@ -108,13 +108,15 @@ onMounted(async () => {
     flex-col
     gap-16
     py-16
+    px-4
     h-full
     bg-background
     text-2xl;
 
   .banner {
     @apply
-      w-[80%]
+      w-full
+      max-w-content
       py-16
       flex
       justify-center
@@ -142,7 +144,8 @@ onMounted(async () => {
 
   .loading, .empty, .error {
     @apply
-      w-[80%]
+      w-full
+      max-w-content
       text-base
       text-gray_text
       text-center
@@ -155,7 +158,8 @@ onMounted(async () => {
 
   .recent {
     @apply
-      w-[80%]
+      w-full
+      max-w-content
       flex
       justify-center
       items-center
@@ -225,14 +229,16 @@ onMounted(async () => {
 
   .divider {
     @apply
-      w-[80%]
+      w-full
+      max-w-content
       border-solid
       border-light_border;
   }
 
   .all {
     @apply
-      w-[80%]
+      w-full
+      max-w-content
       flex
       justify-center
       items-center
@@ -290,7 +296,7 @@ onMounted(async () => {
 
       .post {
         @apply
-          w-[calc(100%/4-24px)];
+          w-[calc((100%-4rem)/3)];
       }
     }
   }
@@ -299,6 +305,10 @@ onMounted(async () => {
 @media screen and (max-width: 780px) {
   .blog {
     @apply h-[calc(100vh-60px-40px)];
+
+    .all .posts .post {
+      @apply w-full;
+    }
   }
 }
 </style>

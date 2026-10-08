@@ -23,6 +23,12 @@ export default {
       // Inside `extend` deliberately: as a sibling of `extend` this replaced
       // Tailwind's whole default font scale, so font-mono/sans/serif did not
       // exist and any use of them failed the build.
+      // Shared by the navbar row and the blog column so they line up.
+      maxWidth: {
+        content: '792px',
+        // content + the 1rem side padding, for rows whose content must measure exactly `content`
+        'content-padded': 'calc(792px + 2rem)',
+      },
       fontFamily: {
         'roboto': ['Roboto', 'sans-serif'],
       }
