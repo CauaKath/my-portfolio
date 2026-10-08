@@ -2,6 +2,8 @@ import type en from './en'
 
 const ptBR: typeof en = {
   nav: {
+    home: 'Início',
+    search: 'Buscar',
     resume: 'Currículo',
     blog: 'Blog',
     games: 'Jogos',
@@ -9,6 +11,15 @@ const ptBR: typeof en = {
     login: 'Entrar',
     logout: 'Sair',
     language: 'Mudar idioma',
+  },
+  search: {
+    title: 'Buscar',
+    placeholder: 'Buscar páginas e posts…',
+    page: 'Página',
+    post: 'Post',
+    draft: 'Rascunho',
+    empty: 'Nenhum resultado.',
+    failed: 'Não foi possível carregar os posts.',
   },
   common: {
     loading: 'Carregando…',
