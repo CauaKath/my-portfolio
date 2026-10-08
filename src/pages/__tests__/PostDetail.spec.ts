@@ -16,7 +16,7 @@ const post: IPost = {
   description: 'Qual a diferença?',
   body: '# Heading\n\nSome **bold** text.',
   cover_url: null,
-  tags: ['tech'],
+  tags: [{ id: 't1', name: 'tech', slug: 'tech', description: 'All things tech', color: '#0369A1' }],
   status: 'PUBLISHED',
   published_at: '2026-08-13T10:00:00Z',
   created_at: '2026-08-01T10:00:00Z',
@@ -105,12 +105,13 @@ describe('PostDetail', () => {
     expect(wrapper.find('.post-cover').attributes('style')).toContain('https://cdn/c.png')
   })
 
-  it('renders tags and read time', async () => {
+  it('renders tag chips and read time', async () => {
     getPostBySlug.mockResolvedValue(post)
     const wrapper = mountDetail()
     await flushPromises()
 
-    expect(wrapper.text()).toContain('#tech')
+    expect(wrapper.find('.tag-chip').text()).toBe('tech')
+    expect(wrapper.find('.tag-chip').attributes('title')).toBe('All things tech')
     expect(wrapper.text()).toContain('min read')
   })
 })

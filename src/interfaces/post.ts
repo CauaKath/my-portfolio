@@ -1,3 +1,5 @@
+import type { ITag } from './tag'
+
 type PostStatus = 'DRAFT' | 'PUBLISHED'
 
 interface IPost {
@@ -7,7 +9,7 @@ interface IPost {
   description: string | null;
   body: string;
   cover_url: string | null;
-  tags: string[];
+  tags: ITag[];
   status: PostStatus;
   published_at: string | null;
   created_at: string;
@@ -20,8 +22,12 @@ interface IPostInput {
   description: string | null;
   body: string;
   cover_url: string | null;
-  tags: string[];
+  tag_ids: string[];
   status: PostStatus;
 }
 
-export type { PostStatus, IPost, IPostInput };
+// What an insert or update returns: the columns of the posts table, without
+// the tags, which live in post_tags and are not part of the row.
+type IPostRow = Omit<IPost, 'tags'>;
+
+export type { PostStatus, IPost, IPostInput, IPostRow };

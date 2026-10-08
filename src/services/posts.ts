@@ -1,8 +1,22 @@
 import { supabase } from '@/lib/supabase'
-import { type IPost, type IPostInput } from '@/interfaces/post'
+import { type IPost, type IPostInput, type IPostRow } from '@/interfaces/post'
+import type { ITag } from '@/interfaces/tag'
 
 const COLUMNS =
-  'id, slug, title, description, body, cover_url, tags, status, published_at, created_at, updated_at'
+  'id, slug, title, description, body, cover_url, status, published_at, created_at, updated_at, ' +
+  'tags:post_tags(tag:tags(id, name, slug, description, color))'
+
+type PostRowWithTags = Omit<IPost, 'tags'> & { tags: { tag: ITag | null }[] | null }
+
+// PostgREST nests the junction rows; callers want a flat, ordered tag list.
+function toPost(row: PostRowWithTags): IPost {
+  const tags = (row.tags ?? [])
+    .map((link) => link.tag)
+    .filter((tag): tag is ITag => tag !== null)
+    .sort((a, b) => a.name.localeCompare(b.name))
+
+  return { ...row, tags }
+}
 
 const COVER_BUCKET = 'post-covers'
 const MAX_COVER_BYTES = 5 * 1024 * 1024
@@ -20,7 +34,7 @@ async function listPosts(): Promise<IPost[]> {
 
   if (error) throw new Error(error.message)
 
-  return (data ?? []) as IPost[]
+  return ((data ?? []) as unknown as PostRowWithTags[]).map(toPost)
 }
 
 async function getPostBySlug(slug: string): Promise<IPost | null> {
@@ -32,7 +46,7 @@ async function getPostBySlug(slug: string): Promise<IPost | null> {
 
   if (error) throw new Error(error.message)
 
-  return (data as IPost) ?? null
+  return data ? toPost(data as unknown as PostRowWithTags) : null
 }
 
 async function listSlugs(): Promise<string[]> {
@@ -43,25 +57,42 @@ async function listSlugs(): Promise<string[]> {
   return (data ?? []).map((row: { slug: string }) => row.slug)
 }
 
-async function createPost(input: IPostInput): Promise<IPost> {
-  const { data, error } = await supabase.from('posts').insert(input).select().single()
+// A post's tags live in post_tags, so they are written by a function that
+// replaces them in one transaction rather than as a column of the post.
+async function setPostTags(postId: string, tagIds: string[]): Promise<void> {
+  const { error } = await supabase.rpc('set_post_tags', { p_post_id: postId, p_tag_ids: tagIds })
+
+  if (error) throw new Error(error.message)
+}
+
+async function createPost(input: IPostInput): Promise<IPostRow> {
+  const { tag_ids: tagIds, ...columns } = input
+
+  const { data, error } = await supabase.from('posts').insert(columns).select().single()
 
   if (error) throw new Error(error.message)
 
-  return data as IPost
+  const created = data as IPostRow
+  await setPostTags(created.id, tagIds)
+
+  return created
 }
 
-async function updatePost(id: string, input: Partial<IPostInput>): Promise<IPost> {
+async function updatePost(id: string, input: Partial<IPostInput>): Promise<IPostRow> {
+  const { tag_ids: tagIds, ...columns } = input
+
   const { data, error } = await supabase
     .from('posts')
-    .update(input)
+    .update(columns)
     .eq('id', id)
     .select()
     .single()
 
   if (error) throw new Error(error.message)
 
-  return data as IPost
+  if (tagIds) await setPostTags(id, tagIds)
+
+  return data as IPostRow
 }
 
 async function deletePost(id: string): Promise<void> {

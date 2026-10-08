@@ -11,7 +11,10 @@ const post: IPost = {
   description: 'Qual a diferença?',
   body: 'word '.repeat(400),
   cover_url: 'https://cdn/cover.png',
-  tags: ['tech', 'data-structure'],
+  tags: [
+    { id: 't1', name: 'tech', slug: 'tech', description: 'All things tech', color: '#0369A1' },
+    { id: 't2', name: 'data-structure', slug: 'data-structure', description: null, color: '#FDE047' },
+  ],
   status: 'PUBLISHED',
   published_at: '2026-08-13T10:00:00Z',
   created_at: '2026-08-01T10:00:00Z',
@@ -33,10 +36,12 @@ describe('BlogPost', () => {
     expect(wrapper.text()).toContain('Qual a diferença?')
   })
 
-  it('renders each tag with a hash prefix', () => {
-    const tags = mountPost().findAll('.post-tags span').map((t) => t.text())
+  it('renders each tag as a colored chip with its description as tooltip', () => {
+    const chips = mountPost().findAll('.post-tags .tag-chip')
 
-    expect(tags).toEqual(['#tech', '#data-structure'])
+    expect(chips.map((chip) => chip.text())).toEqual(['tech', 'data-structure'])
+    expect(chips[0].attributes('title')).toBe('All things tech')
+    expect(chips[0].attributes('style')).toContain('background-color')
   })
 
   it('shows computed read time', () => {

@@ -15,7 +15,7 @@
       </div>
 
       <div class="post-tags" :class="type">
-        <span v-for="tag of post.tags" :key="tag">#{{ tag }}</span>
+        <TagChip v-for="tag of post.tags" :key="tag.id" :tag="tag" />
       </div>
     </div>
   </RouterLink>
@@ -25,6 +25,7 @@
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 
+import TagChip from '@/components/TagChip.vue'
 import { readTimeMinutes } from '@/lib/readTime'
 import type { IPost } from '@/interfaces/post'
 
@@ -175,19 +176,9 @@ const displayDate = computed(() => {
 
     .post-tags {
       @apply
-        text-sm
-        text-primary-default
         flex
+        flex-wrap
         gap-2;
-
-      >span {
-        @apply
-          border-2
-          border-primary-default
-          px-2
-          py-1
-          rounded-md;
-      }
     }
   }
 }

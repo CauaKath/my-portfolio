@@ -45,7 +45,7 @@
         <input class="title-input" v-model="title" type="text" placeholder="Title" />
         <input class="description-input" v-model="description" type="text" placeholder="Short description" />
 
-        <input class="tags-input" v-model="tagsRaw" type="text" placeholder="Tags, comma separated" />
+        <TagPicker v-model="tagIds" />
 
         <div class="tabs" role="tablist">
           <button
@@ -87,6 +87,7 @@ import {
   deletePost,
   uploadCover,
 } from '@/services/posts'
+import TagPicker from '@/components/TagPicker.vue'
 import PostCover from '@/components/PostCover.vue'
 import { renderMarkdown } from '@/lib/markdown'
 import { uniqueSlug } from '@/lib/slug'
@@ -100,7 +101,7 @@ const id = ref<string | null>(null)
 const title = ref('')
 const description = ref('')
 const body = ref('')
-const tagsRaw = ref('')
+const tagIds = ref<string[]>([])
 const coverUrl = ref<string | null>(null)
 const status = ref<PostStatus>('DRAFT')
 const existingSlug = ref<string | null>(null)
@@ -115,19 +116,6 @@ const isPublished = computed(() => status.value === 'PUBLISHED')
 const coverLabel = computed(() => (coverUrl.value ? 'Replace cover' : 'Upload cover'))
 const preview = computed(() => renderMarkdown(body.value))
 
-const tags = computed(() => {
-  const seen = new Set<string>()
-
-  return tagsRaw.value
-    .split(',')
-    .map((tag) => tag.trim())
-    .filter((tag) => {
-      if (!tag || seen.has(tag)) return false
-      seen.add(tag)
-      return true
-    })
-})
-
 onMounted(async () => {
   try {
     if (props.slug) {
@@ -140,7 +128,7 @@ onMounted(async () => {
         title.value = post.title
         description.value = post.description ?? ''
         body.value = post.body
-        tagsRaw.value = post.tags.join(', ')
+        tagIds.value = post.tags.map((tag) => tag.id)
         coverUrl.value = post.cover_url
         status.value = post.status
         existingSlug.value = post.slug
@@ -187,7 +175,7 @@ async function save(nextStatus: PostStatus) {
     description: description.value.trim() || null,
     body: body.value,
     cover_url: coverUrl.value,
-    tags: tags.value,
+    tag_ids: tagIds.value,
     status: nextStatus,
   }
 
@@ -310,10 +298,6 @@ async function remove() {
 
     .description-input {
       @apply text-[15px] leading-[1.75] text-slate-600;
-    }
-
-    .tags-input {
-      @apply font-mono text-xs text-slate-500 border border-slate-300 rounded-full px-3 py-1.5 focus:border-slate-500;
     }
 
     .tabs {

@@ -1,12 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 const mockFrom = vi.fn()
+const mockRpc = vi.fn()
 const mockUpload = vi.fn()
 const mockGetPublicUrl = vi.fn()
 
 vi.mock('@/lib/supabase', () => ({
   supabase: {
     from: (...args: unknown[]) => mockFrom(...args),
+    rpc: (...args: unknown[]) => mockRpc(...args),
     storage: {
       from: () => ({
         upload: (...args: unknown[]) => mockUpload(...args),
@@ -16,15 +18,16 @@ vi.mock('@/lib/supabase', () => ({
   },
 }))
 
-import { listPosts, getPostBySlug, createPost, deletePost, uploadCover } from '../posts'
+import { listPosts, getPostBySlug, createPost, updatePost, deletePost, uploadCover } from '../posts'
 
 beforeEach(() => {
   vi.clearAllMocks()
+  mockRpc.mockResolvedValue({ error: null })
 })
 
 describe('listPosts', () => {
   it('issues one unfiltered query and returns the rows', async () => {
-    const rows = [{ id: '1', slug: 'a' }]
+    const rows = [{ id: '1', slug: 'a', tags: [] }]
     const order2 = vi.fn().mockResolvedValue({ data: rows, error: null })
     const order1 = vi.fn().mockReturnValue({ order: order2 })
     const select = vi.fn().mockReturnValue({ order: order1 })
@@ -68,38 +71,109 @@ describe('getPostBySlug', () => {
   })
 })
 
+const tagA = { id: 't1', name: 'Alpha', slug: 'alpha', description: null, color: '#0369A1' }
+const tagB = { id: 't2', name: 'Beta', slug: 'beta', description: 'b', color: '#112233' }
+
+describe('tag flattening', () => {
+  it('flattens the embedded junction rows into a name-ordered tag list', async () => {
+    const row = { id: '1', slug: 'a', tags: [{ tag: tagB }, { tag: tagA }] }
+    const maybeSingle = vi.fn().mockResolvedValue({ data: row, error: null })
+    mockFrom.mockReturnValue({ select: vi.fn().mockReturnValue({ eq: vi.fn().mockReturnValue({ maybeSingle }) }) })
+
+    const post = await getPostBySlug('a')
+
+    expect(post?.tags).toEqual([tagA, tagB])
+  })
+
+  it('treats a missing tags embed or a dangling link as no tag', async () => {
+    const order2 = vi.fn().mockResolvedValue({
+      data: [{ id: '1', tags: null }, { id: '2', tags: [{ tag: null }, { tag: tagA }] }],
+      error: null,
+    })
+    const order1 = vi.fn().mockReturnValue({ order: order2 })
+    mockFrom.mockReturnValue({ select: vi.fn().mockReturnValue({ order: order1 }) })
+
+    const posts = await listPosts()
+
+    expect(posts.map((p) => p.tags)).toEqual([[], [tagA]])
+  })
+})
+
 describe('createPost', () => {
-  it('returns the inserted row', async () => {
-    const row = { id: '1', slug: 'a', title: 'A' }
-    const single = vi.fn().mockResolvedValue({ data: row, error: null })
+  const input = {
+    slug: 'a', title: 'A', description: null, body: '',
+    cover_url: null, tag_ids: ['t1', 't2'], status: 'DRAFT' as const,
+  }
+
+  function mockInsert(result: unknown) {
+    const single = vi.fn().mockResolvedValue(result)
     const select = vi.fn().mockReturnValue({ single })
     const insert = vi.fn().mockReturnValue({ select })
     mockFrom.mockReturnValue({ insert })
 
-    const input = {
-      slug: 'a', title: 'A', description: null, body: '',
-      cover_url: null, tags: [], status: 'DRAFT' as const,
-    }
+    return insert
+  }
+
+  it('inserts the columns without tag_ids, then sets the tags', async () => {
+    const row = { id: '1', slug: 'a', title: 'A' }
+    const insert = mockInsert({ data: row, error: null })
 
     await expect(createPost(input)).resolves.toEqual(row)
-    expect(insert).toHaveBeenCalledWith(input)
+
+    const { tag_ids: _omitted, ...columns } = input
+    expect(insert).toHaveBeenCalledWith(columns)
+    expect(mockRpc).toHaveBeenCalledWith('set_post_tags', { p_post_id: '1', p_tag_ids: ['t1', 't2'] })
   })
 
-  it('surfaces an RLS rejection as an error', async () => {
-    const single = vi.fn().mockResolvedValue({
-      data: null,
-      error: { message: 'new row violates row-level security policy' },
-    })
-    mockFrom.mockReturnValue({
-      insert: vi.fn().mockReturnValue({ select: vi.fn().mockReturnValue({ single }) }),
-    })
-
-    const input = {
-      slug: 'a', title: 'A', description: null, body: '',
-      cover_url: null, tags: [], status: 'DRAFT' as const,
-    }
+  it('surfaces an RLS rejection as an error and sets no tags', async () => {
+    mockInsert({ data: null, error: { message: 'new row violates row-level security policy' } })
 
     await expect(createPost(input)).rejects.toThrow(/row-level security/)
+    expect(mockRpc).not.toHaveBeenCalled()
+  })
+
+  it('surfaces a failure to set the tags', async () => {
+    mockInsert({ data: { id: '1' }, error: null })
+    mockRpc.mockResolvedValue({ error: { message: 'tags failed' } })
+
+    await expect(createPost(input)).rejects.toThrow('tags failed')
+  })
+})
+
+describe('updatePost', () => {
+  function mockUpdate() {
+    const single = vi.fn().mockResolvedValue({ data: { id: '1' }, error: null })
+    const select = vi.fn().mockReturnValue({ single })
+    const eq = vi.fn().mockReturnValue({ select })
+    const update = vi.fn().mockReturnValue({ eq })
+    mockFrom.mockReturnValue({ update })
+
+    return update
+  }
+
+  it('updates the columns and replaces the tags', async () => {
+    const update = mockUpdate()
+
+    await updatePost('1', { title: 'B', tag_ids: ['t2'] })
+
+    expect(update).toHaveBeenCalledWith({ title: 'B' })
+    expect(mockRpc).toHaveBeenCalledWith('set_post_tags', { p_post_id: '1', p_tag_ids: ['t2'] })
+  })
+
+  it('leaves the tags alone when tag_ids is not given', async () => {
+    mockUpdate()
+
+    await updatePost('1', { title: 'B' })
+
+    expect(mockRpc).not.toHaveBeenCalled()
+  })
+
+  it('clears the tags when given an empty list', async () => {
+    mockUpdate()
+
+    await updatePost('1', { tag_ids: [] })
+
+    expect(mockRpc).toHaveBeenCalledWith('set_post_tags', { p_post_id: '1', p_tag_ids: [] })
   })
 })
 

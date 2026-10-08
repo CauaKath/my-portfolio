@@ -21,13 +21,9 @@
         <div class="meta">
           <span class="post-date">{{ displayDate }}</span>
 
-          <span class="pill">
-            <span>{{ readTime }} min read</span>
-            <template v-for="tag of post.tags" :key="tag">
-              <span class="divider"></span>
-              <span>#{{ tag }}</span>
-            </template>
-          </span>
+          <span class="pill">{{ readTime }} min read</span>
+
+          <TagChip v-for="tag of post.tags" :key="tag.id" :tag="tag" />
 
           <span v-if="post.status === 'DRAFT'" class="draft-badge">DRAFT</span>
 
@@ -53,6 +49,7 @@ import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 
 import { getPostBySlug } from '@/services/posts'
+import TagChip from '@/components/TagChip.vue'
 import PostCover from '@/components/PostCover.vue'
 import PostToc from '@/components/PostToc.vue'
 import { renderMarkdownWithToc } from '@/lib/markdown'
@@ -137,9 +134,6 @@ onMounted(async () => {
         .pill {
           @apply inline-flex items-center gap-2 border border-slate-200 rounded-full px-3 py-1 font-mono text-slate-500;
 
-          .divider {
-            @apply w-px h-3 bg-slate-200;
-          }
         }
 
         .draft-badge {

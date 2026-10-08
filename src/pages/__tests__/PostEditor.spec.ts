@@ -19,6 +19,14 @@ vi.mock('@/services/posts', () => ({
   deletePost: (id: string) => services.deletePost(id),
   uploadCover: (f: unknown) => services.uploadCover(f),
 }))
+const tagServices = {
+  listTags: vi.fn(),
+  createTag: vi.fn(),
+}
+vi.mock('@/services/tags', () => ({
+  listTags: () => tagServices.listTags(),
+  createTag: (i: unknown) => tagServices.createTag(i),
+}))
 vi.mock('@/lib/supabase', () => ({ supabase: {} }))
 
 const push = vi.fn()
@@ -28,6 +36,11 @@ vi.mock('vue-router', async () => {
 })
 
 import PostEditor from '../PostEditor.vue'
+
+const tagList = [
+  { id: 't1', name: 'tech', slug: 'tech', description: 'All things tech', color: '#0369A1' },
+  { id: 't2', name: 'data-structure', slug: 'data-structure', description: null, color: '#FDE047' },
+]
 
 function mountEditor(props: Record<string, unknown> = {}) {
   return mount(PostEditor, {
@@ -40,6 +53,7 @@ beforeEach(() => {
   setActivePinia(createPinia())
   vi.clearAllMocks()
   services.listSlugs.mockResolvedValue([])
+  tagServices.listTags.mockResolvedValue(tagList)
 })
 
 describe('PostEditor in create mode', () => {
@@ -106,19 +120,18 @@ describe('PostEditor in create mode', () => {
     )
   })
 
-  it('parses comma-separated tags into an array', async () => {
+  it('creates the post with the tags picked from the list', async () => {
     services.createPost.mockResolvedValue({ id: '1', slug: 'a' })
     const wrapper = mountEditor()
     await flushPromises()
 
     await wrapper.find('input.title-input').setValue('A')
-    await wrapper.find('input.tags-input').setValue('tech, data-structure , ,tech')
+    await wrapper.find('.add-tag').trigger('click')
+    await wrapper.findAll('.menu-tag')[1].trigger('click')
     await wrapper.find('.save-draft').trigger('click')
     await flushPromises()
 
-    expect(services.createPost).toHaveBeenCalledWith(
-      expect.objectContaining({ tags: ['tech', 'data-structure'] }),
-    )
+    expect(services.createPost).toHaveBeenCalledWith(expect.objectContaining({ tag_ids: ['t2'] }))
   })
 
   it('surfaces an RLS rejection to the user', async () => {
@@ -212,7 +225,7 @@ describe('PostEditor in edit mode', () => {
     description: 'd',
     body: 'b',
     cover_url: null,
-    tags: ['tech'],
+    tags: [tagList[0]],
     status: 'PUBLISHED' as const,
     published_at: '2026-08-13T10:00:00Z',
     created_at: '2026-08-01T10:00:00Z',
@@ -239,6 +252,20 @@ describe('PostEditor in edit mode', () => {
 
     expect(services.updatePost).toHaveBeenCalled()
     expect(services.createPost).not.toHaveBeenCalled()
+  })
+
+  it('loads the existing tags and sends their ids on save', async () => {
+    services.getPostBySlug.mockResolvedValue(existing)
+    services.updatePost.mockResolvedValue(existing)
+    const wrapper = mountEditor({ slug: 'pilha-x-fila' })
+    await flushPromises()
+
+    expect(wrapper.findAll('.selected-tag').map((t) => t.text())).toEqual(['tech×'])
+
+    await wrapper.find('.save-draft').trigger('click')
+    await flushPromises()
+
+    expect(services.updatePost).toHaveBeenCalledWith('1', expect.objectContaining({ tag_ids: ['t1'] }))
   })
 
   it('does not resend the slug of a published post', async () => {
