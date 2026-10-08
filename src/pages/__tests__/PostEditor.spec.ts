@@ -138,9 +138,26 @@ describe('PostEditor in create mode', () => {
     await flushPromises()
 
     await wrapper.find('textarea.body-input').setValue('**bold**')
+    await wrapper.find('.tab-preview').trigger('click')
     await flushPromises()
 
     expect(wrapper.find('.preview').html()).toContain('<strong>bold</strong>')
+  })
+
+  it('toggles between the editor and the preview', async () => {
+    const wrapper = mountEditor()
+    await flushPromises()
+
+    expect(wrapper.find('.preview').exists()).toBe(false)
+    expect(wrapper.find('textarea.body-input').attributes('style') ?? '').not.toContain('display: none')
+
+    await wrapper.find('.tab-preview').trigger('click')
+    expect(wrapper.find('.preview').exists()).toBe(true)
+    expect(wrapper.find('textarea.body-input').attributes('style')).toContain('display: none')
+
+    await wrapper.find('.tab-edit').trigger('click')
+    expect(wrapper.find('.preview').exists()).toBe(false)
+    expect(wrapper.find('textarea.body-input').attributes('style') ?? '').not.toContain('display: none')
   })
 
   it('sanitizes the preview too', async () => {
@@ -148,9 +165,42 @@ describe('PostEditor in create mode', () => {
     await flushPromises()
 
     await wrapper.find('textarea.body-input').setValue('<img src=x onerror="alert(1)">')
+    await wrapper.find('.tab-preview').trigger('click')
     await flushPromises()
 
     expect(wrapper.find('.preview').html()).not.toContain('onerror')
+  })
+})
+
+describe('PostEditor cover', () => {
+  it('shows a placeholder and no remove action when there is no cover', async () => {
+    const wrapper = mountEditor()
+    await flushPromises()
+
+    expect(wrapper.find('.post-cover').classes()).toContain('placeholder')
+    expect(wrapper.find('.cover-remove').exists()).toBe(false)
+    expect(wrapper.find('.cover-button').attributes('aria-label')).toBe('Upload cover')
+  })
+
+  it('removes the cover and saves the post with a null cover_url', async () => {
+    services.getPostBySlug.mockResolvedValue({
+      id: '1', slug: 'a', title: 'A', description: null, body: '', tags: [],
+      cover_url: 'https://cdn/c.png', status: 'DRAFT',
+      published_at: null, created_at: '2026-08-01T10:00:00Z', updated_at: '2026-08-01T10:00:00Z',
+    })
+    services.updatePost.mockResolvedValue({})
+    const wrapper = mountEditor({ slug: 'a' })
+    await flushPromises()
+
+    expect(wrapper.find('.cover-button').attributes('aria-label')).toBe('Replace cover')
+    await wrapper.find('.cover-remove').trigger('click')
+
+    expect(wrapper.find('.post-cover').classes()).toContain('placeholder')
+
+    await wrapper.find('.save-draft').trigger('click')
+    await flushPromises()
+
+    expect(services.updatePost).toHaveBeenCalledWith('1', expect.objectContaining({ cover_url: null }))
   })
 })
 

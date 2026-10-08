@@ -1,8 +1,8 @@
 <template>
   <RouterLink class="post" :class="type" :to="`/blog/${post.slug}`">
-    <div class="post-image" :class="type" :style="coverStyle"></div>
+    <div v-if="post.cover_url" class="post-image" :class="type" :style="coverStyle"></div>
 
-    <div class="post-content" :class="type">
+    <div class="post-content" :class="[type, { 'no-cover': !post.cover_url }]">
       <div class="post-main">
         <div class="post-texts">
           <span class="post-date">
@@ -27,7 +27,6 @@ import { RouterLink } from 'vue-router'
 
 import { readTimeMinutes } from '@/lib/readTime'
 import type { IPost } from '@/interfaces/post'
-import defaultBanner from '@/assets/banner.jpg'
 
 const props = withDefaults(
   defineProps<{
@@ -40,7 +39,7 @@ const props = withDefaults(
 const readTime = computed(() => readTimeMinutes(props.post.body))
 
 const coverStyle = computed(() => ({
-  backgroundImage: `url('${props.post.cover_url ?? defaultBanner}')`,
+  backgroundImage: `url('${props.post.cover_url}')`,
 }))
 
 // Drafts have no published_at, so fall back to when they were last touched.
@@ -110,6 +109,12 @@ const displayDate = computed(() => {
       &.other-recent {
         @apply
           rounded-r-md;
+      }
+
+      // Without an image there is nothing above or beside it to share corners with.
+      &.no-cover {
+        @apply
+          rounded-md;
       }
 
     .post-main {

@@ -77,6 +77,34 @@ describe('PostDetail', () => {
     expect(wrapper.find('.edit-link').exists()).toBe(false)
   })
 
+  it('builds a table of contents from the headings', async () => {
+    getPostBySlug.mockResolvedValue({ ...post, body: '## One\n\ntext\n\n## Two\n\ntext' })
+    const wrapper = mountDetail()
+    await flushPromises()
+
+    const links = wrapper.findAll('.toc a')
+    expect(links.map((a) => a.text())).toEqual(['One', 'Two'])
+    expect(links[0].attributes('href')).toBe('#one')
+    expect(wrapper.find('.post-body h2#one').exists()).toBe(true)
+  })
+
+  it('shows a placeholder cover when the post has none', async () => {
+    getPostBySlug.mockResolvedValue(post)
+    const wrapper = mountDetail()
+    await flushPromises()
+
+    expect(wrapper.find('.post-cover').classes()).toContain('placeholder')
+  })
+
+  it('shows the cover image when set', async () => {
+    getPostBySlug.mockResolvedValue({ ...post, cover_url: 'https://cdn/c.png' })
+    const wrapper = mountDetail()
+    await flushPromises()
+
+    expect(wrapper.find('.post-cover').classes()).not.toContain('placeholder')
+    expect(wrapper.find('.post-cover').attributes('style')).toContain('https://cdn/c.png')
+  })
+
   it('renders tags and read time', async () => {
     getPostBySlug.mockResolvedValue(post)
     const wrapper = mountDetail()

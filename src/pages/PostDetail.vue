@@ -10,29 +10,41 @@
     </div>
 
     <article v-else class="article">
-      <div v-if="post.cover_url" class="cover" :style="{ backgroundImage: `url('${post.cover_url}')` }"></div>
+      <PostCover :url="post.cover_url" />
+
+      <div class="article-inner">
+      <RouterLink class="back-link" to="/blog">← Blog</RouterLink>
 
       <header>
-        <span class="post-date">
-          {{ displayDate }} • {{ readTime }} min read
-          <span v-if="post.status === 'DRAFT'" class="draft-badge">DRAFT</span>
-        </span>
-
         <h1>{{ post.title }}</h1>
-        <p v-if="post.description">{{ post.description }}</p>
 
-        <div class="tags">
-          <span v-for="tag of post.tags" :key="tag">#{{ tag }}</span>
+        <div class="meta">
+          <span class="post-date">{{ displayDate }}</span>
+
+          <span class="pill">
+            <span>{{ readTime }} min read</span>
+            <template v-for="tag of post.tags" :key="tag">
+              <span class="divider"></span>
+              <span>#{{ tag }}</span>
+            </template>
+          </span>
+
+          <span v-if="post.status === 'DRAFT'" class="draft-badge">DRAFT</span>
+
+          <RouterLink v-if="auth.isAdmin" class="edit-link" :to="`/blog/${post.slug}/edit`">
+            Edit
+          </RouterLink>
         </div>
 
-        <RouterLink v-if="auth.isAdmin" class="edit-link" :to="`/blog/${post.slug}/edit`">
-          Edit this post
-        </RouterLink>
+        <p v-if="post.description" class="description">{{ post.description }}</p>
       </header>
 
       <!-- renderMarkdown runs its output through DOMPurify; see src/lib/markdown.ts -->
-      <div class="post-body" v-html="renderedBody"></div>
+      <div class="post-body prose-post" v-html="rendered.html"></div>
+      </div>
     </article>
+
+    <PostToc v-if="post" :items="rendered.toc" />
   </div>
 </template>
 
@@ -41,7 +53,9 @@ import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 
 import { getPostBySlug } from '@/services/posts'
-import { renderMarkdown } from '@/lib/markdown'
+import PostCover from '@/components/PostCover.vue'
+import PostToc from '@/components/PostToc.vue'
+import { renderMarkdownWithToc } from '@/lib/markdown'
 import { readTimeMinutes } from '@/lib/readTime'
 import { useAuthStore } from '@/stores/auth'
 import type { IPost } from '@/interfaces/post'
@@ -54,7 +68,7 @@ const post = ref<IPost | null>(null)
 const loading = ref(true)
 const error = ref('')
 
-const renderedBody = computed(() => (post.value ? renderMarkdown(post.value.body) : ''))
+const rendered = computed(() => renderMarkdownWithToc(post.value?.body ?? ''))
 const readTime = computed(() => (post.value ? readTimeMinutes(post.value.body) : 1))
 
 const displayDate = computed(() => {
@@ -85,10 +99,10 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 .detail {
-  @apply bg-background min-h-[calc(100vh-100px-60px)] py-16 flex justify-center;
+  @apply bg-background min-h-[calc(100vh-100px-60px)] py-16 px-4 flex justify-center;
 
   .loading, .error, .not-found {
-    @apply text-base text-gray_text text-center py-8;
+    @apply text-base text-slate-500 text-center py-8;
   }
 
   .error {
@@ -96,59 +110,51 @@ onMounted(async () => {
   }
 
   .article {
-    @apply w-[80%] max-w-3xl bg-white rounded-md p-8 flex flex-col gap-6;
+    @apply w-full max-w-content bg-white rounded-lg shadow-lg flex flex-col;
 
-    .cover {
-      @apply w-full h-[300px] rounded-md bg-center bg-cover;
+    .article-inner {
+      @apply p-8 flex flex-col gap-6;
+    }
+
+    .back-link {
+      @apply font-mono text-sm font-bold text-slate-800 w-fit;
     }
 
     header {
-      @apply flex flex-col gap-3;
-
-      .post-date {
-        @apply text-sm bg-gradient-to-r from-register-from to-register-to inline-block text-transparent bg-clip-text;
-      }
-
-      .draft-badge {
-        @apply ml-2 bg-primary-default text-white text-xs px-2 py-0.5 rounded;
-      }
+      @apply flex flex-col gap-4;
 
       h1 {
-        @apply text-4xl font-bold text-primary-default;
+        @apply text-2xl font-bold text-slate-800 leading-snug;
       }
 
-      p {
-        @apply text-base text-gray_text;
-      }
+      .meta {
+        @apply flex items-center flex-wrap gap-3 text-xs;
 
-      .tags {
-        @apply flex gap-2 text-sm text-primary-default;
+        .post-date {
+          @apply font-mono text-slate-500;
+        }
 
-        span {
-          @apply border-2 border-primary-default px-2 py-1 rounded-md;
+        .pill {
+          @apply inline-flex items-center gap-2 border border-slate-200 rounded-full px-3 py-1 font-mono text-slate-500;
+
+          .divider {
+            @apply w-px h-3 bg-slate-200;
+          }
+        }
+
+        .draft-badge {
+          @apply bg-slate-800 text-white px-2 py-0.5 rounded-full;
+        }
+
+        .edit-link {
+          @apply text-slate-500 underline underline-offset-2;
         }
       }
 
-      .edit-link {
-        @apply text-sm text-gray_text underline w-fit;
+      .description {
+        @apply text-[15px] leading-[1.75] text-slate-600;
       }
     }
   }
 }
-
-// v-html content carries no scope attribute, so these rules need :deep to
-// reach the rendered markdown.
-.post-body :deep(h1) { @apply text-3xl font-bold text-primary-default mt-6 mb-2; }
-.post-body :deep(h2) { @apply text-2xl font-bold text-primary-default mt-6 mb-2; }
-.post-body :deep(h3) { @apply text-xl font-bold text-primary-default mt-4 mb-2; }
-.post-body :deep(p) { @apply text-base text-primary-default my-3 leading-relaxed; }
-.post-body :deep(ul) { @apply list-disc pl-6 my-3; }
-.post-body :deep(ol) { @apply list-decimal pl-6 my-3; }
-.post-body :deep(a) { @apply text-register-to underline; }
-.post-body :deep(blockquote) { @apply border-l-4 border-light_border pl-4 italic text-gray_text my-4; }
-.post-body :deep(pre) { @apply rounded-md p-4 overflow-x-auto my-4; }
-.post-body :deep(code) { @apply text-sm; }
-.post-body :deep(img) { @apply max-w-full rounded-md my-4; }
-.post-body :deep(table) { @apply w-full border-collapse my-4; }
-.post-body :deep(th), .post-body :deep(td) { @apply border border-light_border px-3 py-2 text-sm; }
 </style>

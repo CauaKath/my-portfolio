@@ -55,10 +55,11 @@ describe('BlogPost', () => {
     expect(style).toContain('https://cdn/cover.png')
   })
 
-  it('falls back to the default banner when cover is null', () => {
-    const style = mountPost({ cover_url: null }).find('.post-image').attributes('style')
+  it('renders no image when the post has no cover', () => {
+    const wrapper = mountPost({ cover_url: null })
 
-    expect(style).toContain('banner')
+    expect(wrapper.find('.post-image').exists()).toBe(false)
+    expect(wrapper.find('.post-content').classes()).toContain('no-cover')
   })
 
   it('shows a DRAFT badge only for drafts', () => {
